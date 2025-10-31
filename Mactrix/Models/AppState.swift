@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import MatrixRustSDK
 
 @MainActor
 @Observable class AppState {

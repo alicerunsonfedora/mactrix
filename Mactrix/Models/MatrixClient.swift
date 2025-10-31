@@ -105,9 +105,9 @@ struct UserSession: Codable {
         return MatrixClient(storeID: storeID, client: client)
     }
     
-    var syncService: SyncService!
-    var roomListService: RoomListService!
-    var roomListEntriesHandle: RoomListEntriesWithDynamicAdaptersResult!
+    fileprivate var syncService: SyncService!
+    fileprivate var roomListService: RoomListService!
+    fileprivate var roomListEntriesHandle: RoomListEntriesWithDynamicAdaptersResult!
     
     func startSync() async throws {
         syncService = try await client.syncService().finish()
@@ -117,40 +117,6 @@ struct UserSession: Codable {
         
         // Start the sync loop.
         await syncService.start()
-    }
-}
-
-extension MatrixClient: RoomListEntriesListener {
-    func onUpdate(roomEntriesUpdate: [RoomListEntriesUpdate]) {
-        for update in roomEntriesUpdate {
-            print("Update rooms: \(update)")
-            switch update {
-            case .append(let values):
-                rooms.append(contentsOf: values)
-            case .clear:
-                rooms.removeAll()
-            case .pushFront(let room):
-                rooms.insert(room, at: 0)
-            case .pushBack(let room):
-                rooms.append(room)
-            case .popFront:
-                rooms.removeFirst()
-            case .popBack:
-                rooms.removeLast()
-            case .insert(let index, let room):
-                rooms.insert(room, at: Int(index))
-            case .set(let index, let room):
-                rooms[Int(index)] = room
-            case .remove(let index):
-                rooms.remove(at: Int(index))
-            case .truncate(let length):
-                rooms.removeSubrange(Int(length)..<rooms.count)
-            case .reset(values: let values):
-                rooms = values
-            }
-        }
-        
-        print(rooms.map { $0.displayName() ?? "unknown" })
     }
 }
 
@@ -165,21 +131,5 @@ fileprivate extension URL {
         cachesDirectory
             .appending(component: applicationID)
             .appending(component: sessionID)
-    }
-}
-
-extension MatrixRustSDK.Room: @retroactive Identifiable {
-    public var id: String {
-        self.id()
-    }
-}
-
-extension MatrixRustSDK.Room: @retroactive Hashable {
-    public static func == (lhs: MatrixRustSDK.Room, rhs: MatrixRustSDK.Room) -> Bool {
-        return lhs.id() == rhs.id()
-    }
-    
-    public func hash(into hasher: inout Hasher) {
-        return hasher.combine(self.id())
     }
 }

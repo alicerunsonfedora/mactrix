@@ -11,6 +11,8 @@ struct RoomIcon: View {
 }
 
 struct MainView: View {
+    @Environment(AppState.self) var appState
+    
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
             SidebarSpacesView()
@@ -18,7 +20,7 @@ struct MainView: View {
             NavigationSplitView {
                 SidebarChannelView()
             } detail: {
-                ChatView()
+                ContentUnavailableView("Select a room", systemImage: "message.fill")
             }
             .toolbarColorScheme(.light, for: .windowToolbar)
             .toolbar(removing: .title)

@@ -1,11 +1,5 @@
-//
-//  ChatView.swift
-//  Mactrix
-//
-//  Created by Viktor Strate Kløvedal on 31/10/2025.
-//
-
 import SwiftUI
+import MatrixRustSDK
 
 struct ChatInput: View {
     
@@ -39,9 +33,22 @@ struct ChatInput: View {
 
 struct ChatMessage: View {
     
-    let name: String
-    let message: String
-    let timestamp: Date
+    let event: EventTimelineItem
+    
+    var name: String {
+        if case let .ready(displayName, _, _) = event.senderProfile, let displayName = displayName {
+            return displayName
+        }
+        return event.sender
+    }
+    
+    var message: String {
+        "message"
+    }
+    
+    var timestamp: Date {
+        Date(timeIntervalSince1970: Double(event.timestamp))
+    }
     
     var timeFormat: DateFormatter {
         let formatter = DateFormatter()
@@ -120,22 +127,52 @@ struct ChatMessage: View {
     }
 }
 
+struct TimelineItemView: View {
+    
+    let item: TimelineItem
+    
+    var body: some View {
+        if let event = item.asEvent() {
+            ChatMessage(event: event)
+        }
+    }
+}
+
 struct ChatView: View {
     @Environment(AppState.self) private var appState
+    
+    let room: Room
+    @State private var timeline: RoomTimeline? = nil
+    
+    @State private var errorMessage: String? = nil
     
     var body: some View {
         VStack(spacing: 0) {
             ScrollView([.vertical]) {
-                ChatMessage(name: "John Doe", message: "Hello World!\nNext Line", timestamp: .now)
-                ChatMessage(name: "Another Person", message: "Hi John!", timestamp: .now)
+                if let timelineItems = timeline?.timelineItems {
+                    ForEach(timelineItems) { item in
+                        TimelineItemView(item: item)
+                    }
+                } else {
+                    ProgressView()
+                }
+                if let errorMessage = errorMessage {
+                    Text(errorMessage)
+                        .foregroundStyle(Color.red)
+                        .frame(maxWidth: .infinity)
+                }
             }
             .defaultScrollAnchor(.bottom)
             ChatInput()
                 .padding(.top, 20)
-        }.background(Color(NSColor.windowBackgroundColor))
+        }
+        .background(Color(NSColor.windowBackgroundColor))
+        .task(id: room) {
+            do {
+                self.timeline = try await RoomTimeline(room: room)
+            } catch {
+                self.errorMessage = error.localizedDescription
+            }
+        }
     }
-}
-
-#Preview {
-    ChatView()
 }
