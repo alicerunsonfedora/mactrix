@@ -41,26 +41,50 @@ struct ChatView: View {
     
     @State private var scrollPosition: String? = nil
     
+    func loadMoreMessages() {
+        print("Reached top, fetching more messages...")
+        Task {
+            try await self.timeline?.fetchOlderMessages()
+        }
+    }
+    
+    @ViewBuilder
+    var timelineItemsView: some View {
+        if let timelineItems = timeline?.timelineItems {
+                    LazyVStack {
+                            ForEach(timelineItems) { item in
+                                if let event = item.asEvent() {
+                                    TimelineItemView(event: event)
+                                        .id(item.id)
+                                }
+                                if let virtual = item.asVirtual() {
+                                    VirtualItemView(item: virtual)
+                                        .id(item.id)
+                                }
+                            }
+                    }
+                    .scrollTargetLayout()
+        } else {
+            ProgressView()
+        }
+    }
+    
     var body: some View {
         VStack(spacing: 0) {
             ScrollView([.vertical]) {
-                if let timelineItems = timeline?.timelineItems {
-                            LazyVStack {
-                                    ForEach(timelineItems) { item in
-                                        if let event = item.asEvent() {
-                                            TimelineItemView(event: event)
-                                                .id(item.id)
-                                        }
-                                        if let virtual = item.asVirtual() {
-                                            VirtualItemView(item: virtual)
-                                                .id(item.id)
-                                        }
-                                    }
-                            }
-                            .scrollTargetLayout()
-                } else {
-                    ProgressView()
+                
+                if timeline?.paginating == .paginating {
+                    ProgressView("Loading more messages")
                 }
+                
+                Text(room.displayName() ?? "Unknown room")
+                    .onScrollVisibilityChange { isVisible in
+                        if isVisible {
+                            loadMoreMessages()
+                        }
+                    }
+                
+                timelineItemsView
                 
                 if let errorMessage = errorMessage {
                     Text(errorMessage)
@@ -87,18 +111,25 @@ struct ChatView: View {
                 self.errorMessage = error.localizedDescription
             }
         }
-        .onChange(of: self.timeline?.timelineItems.count ?? 0) { prev, now in
-            if now > 0 {
-                Task {
-                    if prev == 0 { // disable animation on first load
-                        self.scrollPosition = self.timeline?.timelineItems.last?.id
-                        await Task.yield()
-                        self.scrollPosition = self.timeline?.timelineItems.last?.id
-                    } else {
-                        await Task.yield()
-                        withAnimation {
-                            self.scrollPosition = self.timeline?.timelineItems.last?.id
+        .onChange(of: self.timeline?.timelineItems) { prev, now in
+            if let now = now {
+                if let prev = prev {
+                    let prevId = prev.last?.id
+                    let nowId = now.last?.id
+                    if prevId != nowId && now.count > prev.count {
+                        Task {
+                            await Task.yield()
+                            withAnimation {
+                                self.scrollPosition = self.timeline?.timelineItems.last?.id
+                            }
                         }
+                    }
+                } else {
+                    print("Initial scroll to bottom")
+                    Task {
+                        // disable animation on first load
+                        await Task.yield()
+                        self.scrollPosition = self.timeline?.timelineItems.last?.id
                     }
                 }
             }

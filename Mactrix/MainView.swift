@@ -1,20 +1,11 @@
 import SwiftUI
 import MatrixRustSDK
 
-struct RoomIcon: View {
-    var body: some View {
-        Rectangle()
-            .aspectRatio(1.0, contentMode: .fit)
-            .background(Color.blue)
-    }
-}
-
 struct MainView: View {
     @Environment(AppState.self) var appState
     
     @State private var showWelcomeSheet: Bool = false
     @State private var inspectorVisible: Bool = false
-    @State private var selectedCategory: SelectedCategory = .defaultCategory
     @State private var selectedRoomId: String? = nil
     
     var selectedRoom: Room? {
@@ -32,7 +23,7 @@ struct MainView: View {
     
     var body: some View {
         NavigationSplitView(
-            sidebar: { SidebarChannelView(selectedCategory: selectedCategory, selectedRoomId: $selectedRoomId) },
+            sidebar: { SidebarChannelView(selectedRoomId: $selectedRoomId) },
             detail: { details }
         )
         .inspector(isPresented: $inspectorVisible, content: {
@@ -49,7 +40,6 @@ struct MainView: View {
         .onChange(of: appState.matrixClient == nil) { _, matrixClientIsNil in
             if matrixClientIsNil {
                 showWelcomeSheet = true
-                selectedCategory = .defaultCategory
             }
         }
     }

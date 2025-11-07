@@ -1,6 +1,31 @@
 import SwiftUI
 import MatrixRustSDK
 
+struct RoomIcon: View {
+    @Environment(AppState.self) private var appState
+    
+    let room: Room
+    @State private var avatar: Image? = nil
+    
+    var body: some View {
+        if let avatar = avatar {
+            avatar
+                .aspectRatio(1.0, contentMode: .fit)
+                .clipShape(RoundedRectangle(cornerRadius: 4))
+        } else {
+            Image(systemName: "number")
+                .aspectRatio(1.0, contentMode: .fit)
+                .foregroundStyle(Color.gray)
+                .clipShape(RoundedRectangle(cornerRadius: 4))
+                .task {
+                    guard let avatarUrl = room.avatarUrl() else { return }
+                    guard let imageData = try? await appState.matrixClient?.client.getUrl(url: avatarUrl) else { return }
+                    avatar = try? await Image(importing: imageData, contentType: nil)
+                }
+        }
+    }
+}
+
 struct SidebarChannelView: View {
     @Environment(AppState.self) var appState
     
@@ -8,55 +33,22 @@ struct SidebarChannelView: View {
         appState.matrixClient?.rooms ?? []
     }
     
-    let selectedCategory: SelectedCategory
     @Binding var selectedRoomId: String?
     
-    @State private var visibleRooms: [Room]? = nil
-    
     var body: some View {
-        Group {
-            if let visibleRooms = visibleRooms {
-                List(visibleRooms, selection: $selectedRoomId) { room in
-                    NavigationLink(destination: { ChatView(room: room).id(room.id) }) {
-                        HStack(alignment: .center) {
-                            RoomIcon()
-                                .frame(width: 32, height: 32)
-                            
-                            VStack(alignment: .leading) {
-                                Spacer()
-                                Text(room.displayName() ?? "Unknown Room")
-                                Spacer()
-                            }
-                            
-                            Spacer()
-                        }
-                        .frame(height: 48)
-                        .listRowSeparator(.visible)
-                        .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
-                    }
+        List(selection: $selectedRoomId) {
+            Section("Rooms") {
+                ForEach(rooms) { room in
+                    Label(
+                        title: { Text(room.displayName() ?? "Unknown Room") },
+                        icon: { RoomIcon(room: room) }
+                    )
                 }
-                .listStyle(.sidebar)
-            } else {
-                ProgressView()
             }
-        }
-        .task(id: selectedCategory) { await updateVisibleRooms() }
-        .task(id: rooms) { await updateVisibleRooms() }
-    }
-    
-    func updateVisibleRooms() async {
-        switch selectedCategory {
-        case .rooms:
-            self.visibleRooms = rooms.filter { !$0.isSpace() }
-        case .space(let spaceId):
-            self.visibleRooms = nil
-            let spaceRooms = try! await appState.matrixClient?.client.spaceService().spaceRoomList(spaceId: spaceId)
-            let roomIds = spaceRooms?.rooms().map { $0.roomId } ?? []
-            self.visibleRooms = rooms.filter { room in roomIds.contains(where: { $0 == room.id() }) }
         }
     }
 }
 
 #Preview {
-    SidebarChannelView(selectedCategory: .rooms, selectedRoomId: .constant(nil))
+    SidebarChannelView(selectedRoomId: .constant(nil))
 }

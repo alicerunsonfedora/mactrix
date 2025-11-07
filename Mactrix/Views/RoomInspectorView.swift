@@ -2,12 +2,13 @@ import SwiftUI
 import MatrixRustSDK
 
 struct RoomInspectorView: View {
-    let room: Room
+    let room: RoomProtocol
     @Binding var inspectorVisible: Bool
     
     var body: some View {
         VStack {
-            Text("Room: \(room.id)")
+            Text(room.displayName() ?? "Unknown Room").font(.title)
+            Text(room.topic() ?? "No Topic")
         }
         .inspectorColumnWidth(min: 200, ideal: 250, max: 400)
         .toolbar {
@@ -21,3 +22,7 @@ struct RoomInspectorView: View {
     }
 }
 
+
+#Preview {
+    RoomInspectorView(room: RoomMock(), inspectorVisible: .constant(true))
+}
