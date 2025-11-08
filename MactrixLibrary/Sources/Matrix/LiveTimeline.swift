@@ -1,22 +1,15 @@
-//
-//  MatrixClient+Timeline.swift
-//  Mactrix
-//
-//  Created by Viktor Strate Kløvedal on 31/10/2025.
-//
-
 import Foundation
 import MatrixRustSDK
 
-@Observable class LiveTimeline {
-    let timeline: Timeline
-    fileprivate var timelineHandle: TaskHandle?
-    fileprivate var paginateHandle: TaskHandle?
+@Observable public final class LiveTimeline {
+    public let timeline: Timeline
+    var timelineHandle: TaskHandle?
+    var paginateHandle: TaskHandle?
     
-    var timelineItems: [TimelineItem] = []
-    var paginating: RoomPaginationStatus = .idle(hitTimelineStart: false)
+    public private(set) var timelineItems: [TimelineItem] = []
+    public private(set) var paginating: RoomPaginationStatus = .idle(hitTimelineStart: false)
     
-    init(room: Room) async throws {
+    public init(room: Room) async throws {
         timeline = try await room.timeline()
         
         // Listen to timeline item updates.
@@ -26,7 +19,7 @@ import MatrixRustSDK
         paginateHandle = try await timeline.subscribeToBackPaginationStatus(listener: self)
     }
     
-    func fetchOlderMessages() async throws {
+    public func fetchOlderMessages() async throws {
         guard paginating == .idle(hitTimelineStart: false) else { return }
         
         let _ = try await timeline.paginateBackwards(numEvents: 20)
@@ -34,7 +27,7 @@ import MatrixRustSDK
 }
 
 extension LiveTimeline: TimelineListener {
-    func onUpdate(diff: [TimelineDiff]) {
+    public func onUpdate(diff: [TimelineDiff]) {
         for update in diff {
             switch update {
             case .append(let values):
@@ -65,9 +58,7 @@ extension LiveTimeline: TimelineListener {
 }
 
 extension LiveTimeline: PaginationStatusListener {
-    func onUpdate(status: MatrixRustSDK.RoomPaginationStatus) {
+    public func onUpdate(status: MatrixRustSDK.RoomPaginationStatus) {
         self.paginating = status
     }
-    
-    
 }

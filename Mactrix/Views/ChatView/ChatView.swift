@@ -1,5 +1,6 @@
 import SwiftUI
 import MatrixRustSDK
+import Matrix
 
 struct TimelineItemView: View {
     

@@ -1,5 +1,6 @@
 import SwiftUI
 import MatrixRustSDK
+import UI
 
 struct MainView: View {
     @Environment(AppState.self) var appState
@@ -28,7 +29,7 @@ struct MainView: View {
         )
         .inspector(isPresented: $inspectorVisible, content: {
             if let room = selectedRoom {
-                RoomInspectorView(room: room, inspectorVisible: $inspectorVisible)
+                UI.RoomInspectorView(room: room, inspectorVisible: $inspectorVisible)
             } else {
                 Text("No room selected")
             }

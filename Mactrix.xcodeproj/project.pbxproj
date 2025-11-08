@@ -7,47 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3409F4EA2EBFD8D4009537B4 /* Models in Frameworks */ = {isa = PBXBuildFile; productRef = 3409F4E92EBFD8D4009537B4 /* Models */; };
+		3409F4EC2EBFD8D4009537B4 /* UI in Frameworks */ = {isa = PBXBuildFile; productRef = 3409F4EB2EBFD8D4009537B4 /* UI */; };
 		342C624E2EB4DDE600E2426A /* MatrixRustSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 342C624D2EB4DDE600E2426A /* MatrixRustSDK */; };
+		348DD4BE2EBFE03200B6345E /* Matrix in Frameworks */ = {isa = PBXBuildFile; productRef = 348DD4BD2EBFE03200B6345E /* Matrix */; };
 		34F7225F2EB531F40007B2A4 /* KeychainAccess in Frameworks */ = {isa = PBXBuildFile; productRef = 34F7225E2EB531F40007B2A4 /* KeychainAccess */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		343858502EB3945B0010922A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3438583A2EB394590010922A /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 343858412EB394590010922A;
-			remoteInfo = Mactrix;
-		};
-		3438585A2EB3945B0010922A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 3438583A2EB394590010922A /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 343858412EB394590010922A;
-			remoteInfo = Mactrix;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
+		3409F6012EBFDB93009537B4 /* MactrixLibrary */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = MactrixLibrary; sourceTree = "<group>"; };
 		343858422EB394590010922A /* Mactrix.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Mactrix.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		3438584F2EB3945B0010922A /* MactrixTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MactrixTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		343858592EB3945B0010922A /* MactrixUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MactrixUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		343858442EB394590010922A /* Mactrix */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Mactrix;
-			sourceTree = "<group>";
-		};
-		343858522EB3945B0010922A /* MactrixTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = MactrixTests;
-			sourceTree = "<group>";
-		};
-		3438585C2EB3945B0010922A /* MactrixUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = MactrixUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -57,35 +32,31 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				348DD4BE2EBFE03200B6345E /* Matrix in Frameworks */,
+				3409F4EC2EBFD8D4009537B4 /* UI in Frameworks */,
+				3409F4EA2EBFD8D4009537B4 /* Models in Frameworks */,
 				34F7225F2EB531F40007B2A4 /* KeychainAccess in Frameworks */,
 				342C624E2EB4DDE600E2426A /* MatrixRustSDK in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		3438584C2EB3945B0010922A /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		343858562EB3945B0010922A /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		342480052EBF91B500C85D82 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		343858392EB394590010922A = {
 			isa = PBXGroup;
 			children = (
 				343858442EB394590010922A /* Mactrix */,
-				343858522EB3945B0010922A /* MactrixTests */,
-				3438585C2EB3945B0010922A /* MactrixUITests */,
+				342480052EBF91B500C85D82 /* Frameworks */,
 				343858432EB394590010922A /* Products */,
+				3409F6012EBFDB93009537B4 /* MactrixLibrary */,
 			);
 			sourceTree = "<group>";
 		};
@@ -93,8 +64,6 @@
 			isa = PBXGroup;
 			children = (
 				343858422EB394590010922A /* Mactrix.app */,
-				3438584F2EB3945B0010922A /* MactrixTests.xctest */,
-				343858592EB3945B0010922A /* MactrixUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -121,56 +90,13 @@
 			packageProductDependencies = (
 				342C624D2EB4DDE600E2426A /* MatrixRustSDK */,
 				34F7225E2EB531F40007B2A4 /* KeychainAccess */,
+				3409F4E92EBFD8D4009537B4 /* Models */,
+				3409F4EB2EBFD8D4009537B4 /* UI */,
+				348DD4BD2EBFE03200B6345E /* Matrix */,
 			);
 			productName = Mactrix;
 			productReference = 343858422EB394590010922A /* Mactrix.app */;
 			productType = "com.apple.product-type.application";
-		};
-		3438584E2EB3945B0010922A /* MactrixTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 343858662EB3945B0010922A /* Build configuration list for PBXNativeTarget "MactrixTests" */;
-			buildPhases = (
-				3438584B2EB3945B0010922A /* Sources */,
-				3438584C2EB3945B0010922A /* Frameworks */,
-				3438584D2EB3945B0010922A /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				343858512EB3945B0010922A /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				343858522EB3945B0010922A /* MactrixTests */,
-			);
-			name = MactrixTests;
-			packageProductDependencies = (
-			);
-			productName = MactrixTests;
-			productReference = 3438584F2EB3945B0010922A /* MactrixTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		343858582EB3945B0010922A /* MactrixUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 343858692EB3945B0010922A /* Build configuration list for PBXNativeTarget "MactrixUITests" */;
-			buildPhases = (
-				343858552EB3945B0010922A /* Sources */,
-				343858562EB3945B0010922A /* Frameworks */,
-				343858572EB3945B0010922A /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				3438585B2EB3945B0010922A /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				3438585C2EB3945B0010922A /* MactrixUITests */,
-			);
-			name = MactrixUITests;
-			packageProductDependencies = (
-			);
-			productName = MactrixUITests;
-			productReference = 343858592EB3945B0010922A /* MactrixUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
 
@@ -184,14 +110,6 @@
 				TargetAttributes = {
 					343858412EB394590010922A = {
 						CreatedOnToolsVersion = 26.0.1;
-					};
-					3438584E2EB3945B0010922A = {
-						CreatedOnToolsVersion = 26.0.1;
-						TestTargetID = 343858412EB394590010922A;
-					};
-					343858582EB3945B0010922A = {
-						CreatedOnToolsVersion = 26.0.1;
-						TestTargetID = 343858412EB394590010922A;
 					};
 				};
 			};
@@ -207,6 +125,7 @@
 			packageReferences = (
 				342C624C2EB4DDE600E2426A /* XCRemoteSwiftPackageReference "matrix-rust-components-swift" */,
 				34F7225D2EB531F40007B2A4 /* XCRemoteSwiftPackageReference "KeychainAccess" */,
+				3409F4E82EBFD8D4009537B4 /* XCLocalSwiftPackageReference "MactrixLibrary" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 343858432EB394590010922A /* Products */;
@@ -214,28 +133,12 @@
 			projectRoot = "";
 			targets = (
 				343858412EB394590010922A /* Mactrix */,
-				3438584E2EB3945B0010922A /* MactrixTests */,
-				343858582EB3945B0010922A /* MactrixUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		343858402EB394590010922A /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		3438584D2EB3945B0010922A /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		343858572EB3945B0010922A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -252,34 +155,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		3438584B2EB3945B0010922A /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		343858552EB3945B0010922A /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		343858512EB3945B0010922A /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 343858412EB394590010922A /* Mactrix */;
-			targetProxy = 343858502EB3945B0010922A /* PBXContainerItemProxy */;
-		};
-		3438585B2EB3945B0010922A /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 343858412EB394590010922A /* Mactrix */;
-			targetProxy = 3438585A2EB3945B0010922A /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		343858612EB3945B0010922A /* Debug */ = {
@@ -486,86 +362,6 @@
 			};
 			name = Release;
 		};
-		343858672EB3945B0010922A /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.7;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dk.qpqp.MactrixTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Mactrix.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Mactrix";
-			};
-			name = Debug;
-		};
-		343858682EB3945B0010922A /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.7;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dk.qpqp.MactrixTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Mactrix.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Mactrix";
-			};
-			name = Release;
-		};
-		3438586A2EB3945B0010922A /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dk.qpqp.MactrixUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = Mactrix;
-			};
-			name = Debug;
-		};
-		3438586B2EB3945B0010922A /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEAD_CODE_STRIPPING = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dk.qpqp.MactrixUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TEST_TARGET_NAME = Mactrix;
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -587,25 +383,14 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		343858662EB3945B0010922A /* Build configuration list for PBXNativeTarget "MactrixTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				343858672EB3945B0010922A /* Debug */,
-				343858682EB3945B0010922A /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		343858692EB3945B0010922A /* Build configuration list for PBXNativeTarget "MactrixUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				3438586A2EB3945B0010922A /* Debug */,
-				3438586B2EB3945B0010922A /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		3409F4E82EBFD8D4009537B4 /* XCLocalSwiftPackageReference "MactrixLibrary" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = MactrixLibrary;
+		};
+/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
 		342C624C2EB4DDE600E2426A /* XCRemoteSwiftPackageReference "matrix-rust-components-swift" */ = {
@@ -627,10 +412,22 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		3409F4E92EBFD8D4009537B4 /* Models */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Models;
+		};
+		3409F4EB2EBFD8D4009537B4 /* UI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = UI;
+		};
 		342C624D2EB4DDE600E2426A /* MatrixRustSDK */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 342C624C2EB4DDE600E2426A /* XCRemoteSwiftPackageReference "matrix-rust-components-swift" */;
 			productName = MatrixRustSDK;
+		};
+		348DD4BD2EBFE03200B6345E /* Matrix */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Matrix;
 		};
 		34F7225E2EB531F40007B2A4 /* KeychainAccess */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -1,9 +1,37 @@
 import Foundation
 import MatrixRustSDK
+import Models
 
 extension MatrixRustSDK.Room: @retroactive Identifiable {
     public var id: String {
         self.id()
+    }
+}
+
+extension MatrixRustSDK.EncryptionState {
+    var asModel: Models.EncryptionState {
+        switch self {
+        case .notEncrypted:
+            return .notEncrypted
+        case .encrypted:
+            return .encrypted
+        case .unknown:
+            return .unknown
+        }
+    }
+}
+
+extension MatrixRustSDK.Room: Models.Room {
+    public var displayName: String? {
+        self.displayName()
+    }
+    
+    public var topic: String? {
+        self.topic()
+    }
+    
+    public var encryptionState: Models.EncryptionState {
+        self.encryptionState().asModel
     }
 }
 
