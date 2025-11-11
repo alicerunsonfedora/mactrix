@@ -1,6 +1,8 @@
 import Foundation
 import MatrixRustSDK
 import KeychainAccess
+import AuthenticationServices
+import SwiftUI
 
 struct UserSession: Codable {
     let accessToken: String
@@ -52,6 +54,54 @@ struct UserSession: Codable {
     }
 }
 
+struct HomeserverLogin {
+    let storeID: String
+    let unauthenticatedClient: ClientProtocol
+    let loginDetails: HomeserverLoginDetailsProtocol
+    
+    init(storeID: String, unauthenticatedClient: ClientProtocol, loginDetails: HomeserverLoginDetailsProtocol) {
+        self.storeID = storeID
+        self.unauthenticatedClient = unauthenticatedClient
+        self.loginDetails = loginDetails
+    }
+    
+    func loginPassword(homeServer: String, username: String, password: String) async throws -> MatrixClient {
+        // Login using password authentication.
+        try await unauthenticatedClient.login(username: username, password: password, initialDeviceName: "Mactrix", deviceId: nil)
+        return try onSuccessfullLogin()
+    }
+    
+    private var oidcConfiguration: OidcConfiguration {
+        // redirect uri must be reverse domain of client uri
+        OidcConfiguration(clientName: "Mactrix", redirectUri: "com.github:/", clientUri: "https://github.com/viktorstrate/mactrix", logoUri: nil, tosUri: nil, policyUri: nil, staticRegistrations: [:])
+    }
+    
+    func loginOidc(webAuthSession: WebAuthenticationSession) async throws -> MatrixClient {
+        print("login oidc begin")
+        let authInfo = try await unauthenticatedClient.urlForOidc(oidcConfiguration: oidcConfiguration, prompt: .login, loginHint: nil, deviceId: nil, additionalScopes: nil)
+        let url = URL(string: authInfo.loginUrl())!
+        
+        print("Auth url: \(url)")
+        
+        let callbackUrl = try await webAuthSession.authenticate(using: url, callback: .customScheme("com.github"), additionalHeaderFields: [:])
+        
+        print("after sign in")
+        
+        try await unauthenticatedClient.loginWithOidcCallback(callbackUrl: callbackUrl.absoluteString)
+        
+        return try onSuccessfullLogin()
+    }
+    
+    fileprivate func onSuccessfullLogin() throws -> MatrixClient {
+        let matrixClient = MatrixClient(storeID: storeID, client: unauthenticatedClient)
+        
+        let userSession = try matrixClient.userSession()
+        try userSession.saveUserToKeychain()
+        
+        return matrixClient
+    }
+}
+
 @Observable class MatrixClient {
     let storeID: String
     let client: ClientProtocol
@@ -71,7 +121,7 @@ struct UserSession: Codable {
         return UserSession(session: try client.session(), storeID: storeID)
     }
     
-    static func login(homeServer: String, username: String, password: String) async throws -> MatrixClient {
+    static func loginDetails(homeServer: String) async throws -> HomeserverLogin {
         let storeID = UUID().uuidString
         
         // Create a client for a particular homeserver.
@@ -84,6 +134,25 @@ struct UserSession: Codable {
             .slidingSyncVersionBuilder(versionBuilder: .discoverNative)
             .build()
         
+        let details = await client.homeserverLoginDetails()
+        return HomeserverLogin(storeID: storeID, unauthenticatedClient: client, loginDetails: details)
+    }
+    
+    /*static func login(homeServer: String, username: String, password: String) async throws -> MatrixClient {
+        let storeID = UUID().uuidString
+        
+        // Create a client for a particular homeserver.
+        // Note that we can pass a server name (the second part of a Matrix user ID) instead of the direct URL.
+        // This allows the SDK to discover the homeserver's well-known configuration for Sliding Sync support.
+        let client = try await ClientBuilder()
+            .serverNameOrHomeserverUrl(serverNameOrUrl: homeServer)
+            .sessionPaths(dataPath: URL.sessionData(for: storeID).path(percentEncoded: false),
+                          cachePath: URL.sessionCaches(for: storeID).path(percentEncoded: false))
+            .slidingSyncVersionBuilder(versionBuilder: .discoverNative)
+            .build()
+        
+        
+        
         // Login using password authentication.
         try await client.login(username: username, password: password, initialDeviceName: "Mactrix", deviceId: nil)
         
@@ -93,7 +162,7 @@ struct UserSession: Codable {
         try userSession.saveUserToKeychain()
         
         return matrixClient
-    }
+    }*/
     
     static func attemptRestore() async throws -> MatrixClient? {
         guard let userSession = try UserSession.loadUserFromKeychain() else { return nil }

@@ -5,7 +5,7 @@ import UI
 
 struct TimelineItemView: View {
     
-    let event: EventTimelineItem
+    let event: MatrixRustSDK.EventTimelineItem
     
     var body: some View {
         switch event.content {
@@ -96,6 +96,7 @@ struct ChatView: View {
                 
             }
             .scrollPosition(id: $scrollPosition, anchor: .bottom)
+            .scrollIndicators(.hidden)
             .safeAreaPadding(.bottom, 10)
             .safeAreaPadding(.top, 20)
             .scrollContentBackground(.hidden)

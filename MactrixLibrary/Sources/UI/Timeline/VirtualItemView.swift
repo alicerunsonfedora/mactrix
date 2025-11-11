@@ -11,19 +11,42 @@ public struct VirtualItemView: View {
     public var body: some View {
         switch item {
         case .dateDivider(let date):
-            Text("Date: \(date.formatted())")
+            Divider()
+                .overlay {
+                    Text(date.formatted(date: .long, time: .shortened))
+                        .padding(.horizontal, 10)
+                        .background(Color(NSColor.controlBackgroundColor))
+                }
+                .frame(height: 40)
         case .readMarker:
-            Text("Read Marker")
+            Divider()
+                .overlay {
+                    Text("Read Marker")
+                        .fontWeight(.medium)
+                        .padding(.horizontal, 10)
+                        .background(Color(NSColor.controlBackgroundColor))
+                }
+                .frame(height: 40)
         case .timelineStart:
-            Text("Start of conversation")
+            Divider()
+                .overlay {
+                    Text("Start of conversation")
+                        .fontWeight(.medium)
+                        .padding(.horizontal, 10)
+                        .background(Color(NSColor.controlBackgroundColor))
+                }
+                .frame(height: 40)
         }
     }
 }
 
 #Preview {
-    VStack(spacing: 20) {
+    VStack(spacing: 0) {
         VirtualItemView(item: .timelineStart)
         VirtualItemView(item: .dateDivider(date: Date()))
         VirtualItemView(item: .readMarker)
-    }.padding()
+    }
+    .padding(40)
+    .frame(width: 400)
+    .background(Color(NSColor.controlBackgroundColor))
 }

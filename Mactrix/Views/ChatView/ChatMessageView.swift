@@ -28,7 +28,7 @@ struct ChatReactionView: View {
 
 struct ChatMessageView: View {
     
-    let event: EventTimelineItem
+    let event: MatrixRustSDK.EventTimelineItem
     let msg: MsgLikeContent
     
     var name: String {
