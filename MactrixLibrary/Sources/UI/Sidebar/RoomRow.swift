@@ -24,10 +24,11 @@ struct MockError: LocalizedError {
 }
 
 #Preview {
-    Text("Hello")
+    ErrorPopover(error: MockError())
+    /*Text("Hello")
         .popover(isPresented: .constant(true)) {
             ErrorPopover(error: MockError())
-        }
+        }*/
 }
 
 public struct RoomRow: View {
