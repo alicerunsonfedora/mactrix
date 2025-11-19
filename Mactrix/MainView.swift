@@ -9,9 +9,6 @@ struct MainView: View {
     
     @State private var showWelcomeSheet: Bool = false
     
-    @SceneStorage("MainView.selectedRoomId")
-    private var selectedRoomId: String?
-    
     @ViewBuilder var details: some View {
         switch windowState.selectedScreen {
         case .joinedRoom(let room):
@@ -25,16 +22,34 @@ struct MainView: View {
             UI.CreateRoomScreen(onSubmit: { params in
                 guard let matrixClient = appState.matrixClient else { return }
                 let newRoom = try await matrixClient.client.createRoom(request: params.asMatrixRequest)
-                selectedRoomId = newRoom
+                windowState.selectedRoomId = newRoom
             })
         case .none:
             ContentUnavailableView("Select a room", systemImage: "message.fill")
         }
     }
     
+    var verificationSheetPresented: Binding<Bool> {
+        Binding(
+            get: { appState.matrixClient?.sessionVerificationData != nil },
+            set: { isPresented in
+                if !isPresented {
+                    Task {
+                        do {
+                            try await appState.matrixClient?.client.getSessionVerificationController().declineVerification()
+                        } catch {
+                            print("failed to decline verification: \(error)")
+                            appState.matrixClient?.sessionVerificationData = nil
+                        }
+                    }
+                }
+            }
+        )
+    }
+    
     var body: some View {
         NavigationSplitView(
-            sidebar: { SidebarView(selectedRoomId: $selectedRoomId) },
+            sidebar: { SidebarView() },
             detail: { details }
         )
         .environment(windowState)
@@ -47,13 +62,37 @@ struct MainView: View {
         .sheet(isPresented: $showWelcomeSheet, onDismiss: onLoginModalDismiss ) {
             WelcomeSheetView()
         }
+        .sheet(isPresented: verificationSheetPresented, content: {
+            if let verificationData = appState.matrixClient?.sessionVerificationData {
+                UI.SessionVerificationModal(verificationData: verificationData.asModel, onComplete: { response in
+                    Task {
+                        switch response {
+                        case .accept:
+                            do {
+                                try await appState.matrixClient?.client.getSessionVerificationController().approveVerification()
+                            } catch {
+                                print("failed to approve verification: \(error)")
+                                appState.matrixClient?.sessionVerificationData = nil
+                            }
+                        case .decline:
+                            do {
+                                try await appState.matrixClient?.client.getSessionVerificationController().declineVerification()
+                            } catch {
+                                print("failed to decline verification: \(error)")
+                                appState.matrixClient?.sessionVerificationData = nil
+                            }
+                        }
+                    }
+                })
+            }
+        })
         .onChange(of: appState.matrixClient == nil) { _, matrixClientIsNil in
             if matrixClientIsNil {
                 print("Matrix client is nil, present welcome sheet")
                 showWelcomeSheet = true
             }
         }
-        .task(id: selectedRoomId) {
+        .task(id: windowState.selectedRoomId) {
             await onRoomSelected()
         }
         .onChange(of: appState.matrixClient?.authenticationFailed) { _, authFailed in
@@ -110,9 +149,9 @@ struct MainView: View {
         guard let matrixClient = appState.matrixClient else { return }
         
         do {
-            print("Selected room: \(selectedRoomId.debugDescription)")
+            print("Selected room: \(windowState.selectedRoomId.debugDescription)")
             
-            if let roomId = selectedRoomId {
+            if let roomId = windowState.selectedRoomId {
                 if let selectedRoom = try matrixClient.client.getRoom(roomId: roomId) {
                     self.windowState.selectedScreen = .joinedRoom(LiveRoom(matrixRoom: selectedRoom))
                 } else {

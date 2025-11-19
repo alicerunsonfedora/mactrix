@@ -5,6 +5,9 @@ import SwiftUI
 @Observable final class WindowState {
     var selectedScreen: SelectedScreen = .none
     
+    //@SceneStorage("MainView.selectedRoomId")
+    var selectedRoomId: String?
+    
     //@SceneStorage("MainView.inspectorVisible")
     var inspectorVisible: Bool = false
     

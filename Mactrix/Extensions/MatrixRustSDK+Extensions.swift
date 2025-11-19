@@ -141,3 +141,27 @@ extension MatrixRustSDK.SpaceRoom: @retroactive Identifiable {
 extension MatrixRustSDK.UserProfile: @retroactive Identifiable, Models.UserProfile {
     public var id: String { self.userId }
 }
+
+extension MatrixRustSDK.SessionVerificationEmoji: @retroactive Identifiable {
+    public var id: String { self.description() }
+}
+extension MatrixRustSDK.SessionVerificationEmoji: Models.SessionVerificationEmoji {
+    public var description: String {
+        self.description()
+    }
+    
+    public var symbol: String {
+        self.symbol()
+    }
+}
+
+extension MatrixRustSDK.SessionVerificationData {
+    var asModel: Models.SessionVerificationData<MatrixRustSDK.SessionVerificationEmoji> {
+        switch self {
+        case .emojis(let emojis, let indices):
+            return .emojis(emojis: emojis, indices: indices)
+        case .decimals(let values):
+            return .decimals(values: values)
+        }
+    }
+}

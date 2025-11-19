@@ -10,16 +10,11 @@ struct SettingsView: View {
             Tab("Appearance", systemImage: "eye") {
                 Text("Appearance Settings")
             }
-            Tab("Encryption", systemImage: "lock") {
-                Text("Encryption Settings")
+            Tab("Sessions", systemImage: "desktopcomputer.and.macbook") {
+                SessionsSettingsView()
             }
         }
         .scenePadding()
         .frame(maxWidth: 450, minHeight: 200)
     }
-}
-
-#Preview {
-    SettingsView()
-        .environment(AppState.previewMock)
 }

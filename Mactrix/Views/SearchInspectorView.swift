@@ -2,16 +2,58 @@ import SwiftUI
 import MatrixRustSDK
 import UI
 
+struct SearchUserPopover: View {
+    @Environment(AppState.self) var appState
+    @Environment(WindowState.self) var windowState
+    
+    let user: UserProfile
+    
+    var body: some View {
+        VStack {
+            if let displayName = user.displayName {
+                Text(displayName)
+            }
+            
+            Text(user.userId)
+            
+            Button("Send DM", action: openUserRoom)
+        }
+        .padding()
+    }
+    
+    func openUserRoom() {
+        guard let matrixClient = appState.matrixClient else { return }
+        
+        Task {
+            do {
+                if let room = try matrixClient.client.getDmRoom(userId: user.id) {
+                    windowState.selectedRoomId = room.id
+                    return
+                }
+                
+                let createRoomParams = CreateRoomParameters(
+                    name: nil, isEncrypted: false, isDirect: true, visibility: .private,
+                    preset: .privateChat, invite: [user.userId])
+                let roomId = try await matrixClient.client.createRoom(request: createRoomParams)
+                windowState.selectedRoomId = roomId
+            } catch {
+                print("failed to get DM room for user \(user.id): \(error)")
+            }
+        }
+    }
+}
+
 struct SearchInspectorView: View {
     @Environment(AppState.self) var appState
     @Environment(WindowState.self) var windowState
     
     @State var searchedUsers: [UserProfile] = []
     @State var searching: Bool = false
+    @State var userListSelection: String? = nil
     
     @ViewBuilder
     var searchUsers: some View {
-        List {
+        List(selection: $userListSelection) {
             Section("User search results") {
                 if searching {
                     Group {
@@ -22,6 +64,15 @@ struct SearchInspectorView: View {
                 } else {
                     ForEach(searchedUsers) { user in
                         UI.UserProfileRow(userProfile: user, imageLoader: appState.matrixClient)
+                            .popover(
+                                isPresented: Binding(
+                                    get: { userListSelection == user.id },
+                                    set: { _ in userListSelection = nil }
+                                ),
+                                arrowEdge: .leading,
+                            ) {
+                                SearchUserPopover(user: user)
+                            }
                     }
                 }
             }

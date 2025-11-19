@@ -1,5 +1,6 @@
 import Foundation
 import MatrixRustSDK
+import UserNotifications
 
 extension MatrixClient: RoomListEntriesListener {
     func onUpdate(roomEntriesUpdate: [RoomListEntriesUpdate]) {
@@ -35,5 +36,49 @@ extension MatrixClient: RoomListEntriesListener {
 extension MatrixClient: SyncServiceStateObserver {
     func onUpdate(state: MatrixRustSDK.SyncServiceState) {
         self.syncState = state
+    }
+}
+
+extension MatrixClient: VerificationStateListener {
+    func onUpdate(status: MatrixRustSDK.VerificationState) {
+        self.verificationState = status
+    }
+}
+
+extension MatrixClient: SessionVerificationControllerDelegate {
+    func didReceiveVerificationRequest(details: MatrixRustSDK.SessionVerificationRequestDetails) {
+        print("session verification: didReceiveVerificationRequest")
+        self.sessionVerificationRequest = details
+    }
+    
+    func didAcceptVerificationRequest() {
+        print("session verification: didAcceptVerificationRequest")
+    }
+    
+    func didStartSasVerification() {
+        print("session verification: didStartSasVerification")
+    }
+    
+    func didReceiveVerificationData(data: MatrixRustSDK.SessionVerificationData) {
+        print("session verification: didReceiveVerificationData")
+        sessionVerificationData = data
+    }
+    
+    func didFail() {
+        print("session verification: didFail")
+        self.sessionVerificationRequest = nil
+        self.sessionVerificationData = nil
+    }
+    
+    func didCancel() {
+        print("session verification: didCancel")
+        self.sessionVerificationRequest = nil
+        self.sessionVerificationData = nil
+    }
+    
+    func didFinish() {
+        print("session verification: didFinish")
+        self.sessionVerificationRequest = nil
+        self.sessionVerificationData = nil
     }
 }

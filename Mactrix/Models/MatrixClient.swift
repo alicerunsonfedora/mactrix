@@ -44,6 +44,7 @@ struct UserSession: Codable {
     }
     
     static func loadUserFromKeychain() throws -> Self? {
+        print("Load user from keychain")
         #if DEBUG
         if true {
             return try JSONDecoder().decode(Self.self, from: DevSecrets.matrixSession.data(using: .utf8)!)
@@ -112,14 +113,27 @@ enum SelectedScreen {
 
 @Observable class MatrixClient {
     let storeID: String
-    let client: ClientProtocol
+    var client: ClientProtocol! = nil
     
     var rooms: [SidebarRoom] = []
     
-    let spaceService: LiveSpaceService
+    var spaceService: LiveSpaceService! = nil
     
     private var clientDelegateHandle: TaskHandle? = nil
     var authenticationFailed: Bool = false
+    
+    init(storeID: String, clientBuilder: ClientBuilderProtocol) async throws {
+        self.storeID = storeID
+        
+        self.client = try await clientBuilder
+            .enableOidcRefreshLock()
+            .setSessionDelegate(sessionDelegate: self)
+            .build()
+        
+        self.spaceService = LiveSpaceService(spaceService: client.spaceService())
+        
+        clientDelegateHandle = try? self.client.setDelegate(delegate: self)
+    }
     
     init(storeID: String, client: ClientProtocol) {
         self.storeID = storeID
@@ -129,26 +143,26 @@ enum SelectedScreen {
         clientDelegateHandle = try? self.client.setDelegate(delegate: self)
     }
     
-    static var previewMock: MatrixClient {
-        MatrixClient(storeID: UUID().uuidString, client: MatrixClientMock())
-    }
-    
     func userSession() throws -> UserSession {
         return UserSession(session: try client.session(), storeID: storeID)
+    }
+    
+    static func clientBuilder(homeServer: String, storeId: String) -> ClientBuilder {
+        return ClientBuilder()
+            .serverNameOrHomeserverUrl(serverNameOrUrl: homeServer)
+            .sessionPaths(dataPath: URL.sessionData(for: storeId).path(percentEncoded: false),
+                          cachePath: URL.sessionCaches(for: storeId).path(percentEncoded: false))
+            .slidingSyncVersionBuilder(versionBuilder: .discoverNative)
+            .threadsEnabled(enabled: true, threadSubscriptions: true)
+            .autoEnableCrossSigning(autoEnableCrossSigning: true)
+            .userAgent(userAgent: "Mactrix macOS")
     }
     
     static func loginDetails(homeServer: String) async throws -> HomeserverLogin {
         let storeID = UUID().uuidString
         
-        // Create a client for a particular homeserver.
-        // Note that we can pass a server name (the second part of a Matrix user ID) instead of the direct URL.
-        // This allows the SDK to discover the homeserver's well-known configuration for Sliding Sync support.
-        let client = try await ClientBuilder()
-            .serverNameOrHomeserverUrl(serverNameOrUrl: homeServer)
-            .sessionPaths(dataPath: URL.sessionData(for: storeID).path(percentEncoded: false),
-                          cachePath: URL.sessionCaches(for: storeID).path(percentEncoded: false))
-            .slidingSyncVersionBuilder(versionBuilder: .discoverNative)
-            .build()
+        
+        let client = try await Self.clientBuilder(homeServer: homeServer, storeId: storeID).build()
         
         let details = await client.homeserverLoginDetails()
         return HomeserverLogin(storeID: storeID, unauthenticatedClient: client, loginDetails: details)
@@ -161,13 +175,9 @@ enum SelectedScreen {
         let storeID = userSession.storeID
         
         // Build a client for the homeserver.
-        let client = try await ClientBuilder()
-            .sessionPaths(dataPath: URL.sessionData(for: storeID).path(percentEncoded: false),
-                          cachePath: URL.sessionCaches(for: storeID).path(percentEncoded: false))
-            .homeserverUrl(url: session.homeserverUrl)
-            .build()
+        let clientBuilder = Self.clientBuilder(homeServer: session.homeserverUrl, storeId: storeID)
         
-        let matrixClient = MatrixClient(storeID: storeID, client: client)
+        let matrixClient = try await MatrixClient(storeID: storeID, clientBuilder: clientBuilder)
         
         // Restore the client using the session.
         try await matrixClient.client.restoreSession(session: session)
@@ -176,11 +186,13 @@ enum SelectedScreen {
     }
     
     func reset() async throws {
+        print("matrix client sign out")
         try? await client.logout()
         try? FileManager.default.removeItem(at: .sessionData(for: self.storeID))
         try? FileManager.default.removeItem(at: .sessionCaches(for: self.storeID))
         let keychain = Keychain(service: applicationID)
         try keychain.removeAll()
+        print("matrix client sign out complete")
     }
     
     var syncService: SyncService?
@@ -189,6 +201,12 @@ enum SelectedScreen {
     var roomListEntriesHandle: RoomListEntriesWithDynamicAdaptersResult?
     
     private var syncStateHandle: TaskHandle? = nil
+    private var verificationStateHandle: TaskHandle? = nil
+    
+    /// The latest session verification request received by another client
+    var sessionVerificationRequest: SessionVerificationRequestDetails? = nil
+    var sessionVerificationData: SessionVerificationData? = nil
+    var verificationState: VerificationState? = nil
     
     var notificationClient: NotificationClient?
     
@@ -208,6 +226,10 @@ enum SelectedScreen {
         
         notificationClient = try await client.notificationClient(processSetup: .singleProcess(syncService: _syncService))
         
+        try await client.getSessionVerificationController().setDelegate(delegate: self)
+        
+        verificationStateHandle = client.encryption().verificationStateListener(listener: self)
+        
         // Start the sync loop.
         await _syncService.start()
         print("Matrix sync started")
@@ -215,6 +237,26 @@ enum SelectedScreen {
     
     func clearCache() async throws {
         try await self.client.clearCaches(syncService: syncService)
+    }
+    
+    func declineVerificationRequest(request: SessionVerificationRequestDetails) async throws {
+        try await client.getSessionVerificationController().acknowledgeVerificationRequest(
+            senderId: request.senderProfile.userId, flowId: request.flowId
+        )
+        
+        try await client.getSessionVerificationController().cancelVerification()
+    }
+    
+    func acceptVerificationRequest(request: SessionVerificationRequestDetails) async throws {
+        try await client.getSessionVerificationController().acknowledgeVerificationRequest(
+            senderId: request.senderProfile.userId, flowId: request.flowId
+        )
+        
+        try await client.getSessionVerificationController().acceptVerificationRequest()
+    }
+    
+    func requestDeviceVerification() async throws {
+        try await client.getSessionVerificationController().requestDeviceVerification()
     }
 }
 
@@ -224,6 +266,38 @@ extension MatrixClient: MatrixRustSDK.ClientDelegate {
         print("did receive auth error: soft logout \(isSoftLogout)")
         if !isSoftLogout {
             self.authenticationFailed = true
+        }
+    }
+}
+
+enum MatrixClientRestoreSessionError: Error {
+    case sessionNotFound, wrongUserId
+}
+
+extension MatrixClient: MatrixRustSDK.ClientSessionDelegate {
+    
+    func retrieveSessionFromKeychain(userId: String) throws -> MatrixRustSDK.Session {
+        print("client session delegate: retrieve session from keychain: \(userId)")
+        
+        let userSession = try UserSession.loadUserFromKeychain()
+        if let userSession {
+            if userSession.userID == userId {
+                return userSession.session
+            } else {
+                print("restored user session has wrong userId: \(userSession.userID), expected \(userId)")
+                throw MatrixClientRestoreSessionError.wrongUserId
+            }
+        } else {
+            throw MatrixClientRestoreSessionError.sessionNotFound
+        }
+    }
+    
+    func saveSessionInKeychain(session: MatrixRustSDK.Session) {
+        print("client session delegate: save session in keychain")
+        do {
+            try UserSession(session: session, storeID: storeID).saveUserToKeychain()
+        } catch {
+            print("failed to save session in keychain: \(error)")
         }
     }
 }

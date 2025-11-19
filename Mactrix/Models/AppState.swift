@@ -14,11 +14,4 @@ import MatrixRustSDK
         }
         matrixClient = nil
     }
-    
-    static var previewMock: AppState {
-        let appState = AppState()
-        appState.matrixClient = .previewMock
-        
-        return appState
-    }
 }

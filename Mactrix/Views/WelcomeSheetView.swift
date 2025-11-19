@@ -99,7 +99,7 @@ struct WelcomeSheetView: View {
                 .padding(.bottom)
             
             Form {
-                TextField("Homeserver", text: $homeserverField)
+                TextField("Homeserver", text: $homeserverField, prompt: Text("matrix.org"))
                     .disabled(loading)
                     .onSubmit { loadHomeserver() }
                 
