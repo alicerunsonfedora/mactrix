@@ -45,7 +45,7 @@ struct SearchUserPopover: View {
     }
 }
 
-struct SearchInspectorView: View {
+struct SearchUserInspectorView: View {
     @Environment(AppState.self) var appState
     @Environment(WindowState.self) var windowState
 
@@ -53,8 +53,7 @@ struct SearchInspectorView: View {
     @State var searching: Bool = false
     @State var userListSelection: String? = nil
 
-    @ViewBuilder
-    var searchUsers: some View {
+    var body: some View {
         List(selection: $userListSelection) {
             Section("User search results") {
                 if searching {
@@ -101,25 +100,5 @@ struct SearchInspectorView: View {
                 Logger.viewCycle.error("user search failed: \(error)")
             }
         }
-    }
-
-    @ViewBuilder
-    var viewSelector: some View {
-        if windowState.searchTokens.contains(.messages) {
-            Text("Search messages")
-        } else if windowState.searchTokens.contains(.rooms) {
-            Text("Search rooms")
-        } else if windowState.searchTokens.contains(.spaces) {
-            Text("Search spaces")
-        } else if windowState.searchTokens.contains(.users) {
-            searchUsers
-        } else {
-            Text("Select a search term")
-        }
-    }
-
-    var body: some View {
-        viewSelector
-            .inspectorColumnWidth(min: 300, ideal: 300, max: 600)
     }
 }

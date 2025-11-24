@@ -1,6 +1,6 @@
 import Models
-import SwiftUI
 import OSLog
+import SwiftUI
 
 struct ErrorPopover: View {
     let error: Error
@@ -64,7 +64,11 @@ public struct RoomRow: View {
 
     var label: some View {
         Label(
-            title: { Text(title) },
+            title: {
+                Text(title)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            },
             icon: {
                 UI.AvatarImage(avatarUrl: avatarUrl, imageLoader: imageLoader) {
                     Image(systemName: placeholderImageName)

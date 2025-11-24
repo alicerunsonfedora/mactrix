@@ -153,11 +153,11 @@ enum SelectedScreen {
     var roomListServiceState: RoomListServiceState?
     var showRoomSyncIndicator: RoomListServiceSyncIndicator?
 
-    private var roomListEntriesHandle: RoomListEntriesWithDynamicAdaptersResult?
-    private var roomListServiceStateHandle: TaskHandle?
-    private var syncIndicatorHandle: TaskHandle?
-    private var syncStateHandle: TaskHandle?
-    private var verificationStateHandle: TaskHandle?
+    @ObservationIgnored fileprivate var roomListEntriesHandle: RoomListEntriesWithDynamicAdaptersResult?
+    @ObservationIgnored fileprivate var roomListServiceStateHandle: TaskHandle?
+    @ObservationIgnored fileprivate var syncIndicatorHandle: TaskHandle?
+    @ObservationIgnored fileprivate var syncStateHandle: TaskHandle?
+    @ObservationIgnored fileprivate var verificationStateHandle: TaskHandle?
 
     /// The latest session verification request received by another client
     var sessionVerificationRequest: SessionVerificationRequestDetails?
