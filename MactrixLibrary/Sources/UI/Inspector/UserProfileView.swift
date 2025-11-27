@@ -32,11 +32,29 @@ public struct UserProfileView<Profile: UserProfile>: View {
         self.imageLoader = imageLoader
     }
 
+    @ViewBuilder
+    var profileHeader: some View {
+        VStack(alignment: .center) {
+            AvatarImage(avatarUrl: profile.avatarUrl, imageLoader: imageLoader)
+                .frame(width: 72, height: 72)
+                .clipShape(.circle)
+                .padding(.bottom, 6)
+
+            Text(profile.displayName ?? "No display name")
+                .textSelection(.enabled)
+            Text(profile.userId)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .textSelection(.enabled)
+        }
+        .frame(maxWidth: .infinity)
+        .listRowSeparator(.hidden)
+        .padding(.top)
+    }
+
     public var body: some View {
         List {
-            UserProfileRowLarge(profile: profile, imageLoader: imageLoader)
-                .listRowSeparator(.hidden)
-                .padding(.top)
+            profileHeader
 
             Section("Timeline") {
                 Button(action: { timelineActions?.jumpToReadReceipt() }) {

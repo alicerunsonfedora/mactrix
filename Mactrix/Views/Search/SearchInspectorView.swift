@@ -6,19 +6,33 @@ import UI
 
 struct SearchResolvedRoomInspectorView: View {
     @Environment(AppState.self) var appState
+    @Environment(WindowState.self) var windowState
 
     @State private var roomPreview: MatrixRustSDK.RoomPreview?
 
     let alias: String
     let resolvedRoom: ResolvedRoomAlias
 
+    var roomActions: RoomPreviewActions? {
+        guard let preview = roomPreview else { return nil }
+        return appState.matrixClient?.roomPreviewActions(forRoomWithId: preview.info().roomId, windowState: windowState)
+    }
+
     var body: some View {
         Group {
             if let roomPreview {
-                UI.RoomPreviewView(preview: roomPreview.info(), imageLoader: appState.matrixClient)
+                UI.RoomPreviewView(
+                    preview: roomPreview.info(),
+                    imageLoader: appState.matrixClient,
+                    actions: roomActions
+                )
             } else {
-                UI.RoomPreviewView(preview: MockRoomPreviewInfo(), imageLoader: appState.matrixClient)
-                    .redacted(reason: .placeholder)
+                UI.RoomPreviewView(
+                    preview: MockRoomPreviewInfo(),
+                    imageLoader: appState.matrixClient,
+                    actions: roomActions
+                )
+                .redacted(reason: .placeholder)
             }
         }
         .task(id: alias) {
@@ -50,7 +64,11 @@ struct SearchInspectorView: View {
         case let .resolvedRoomAlias(alias: alias, resolvedRoom: resolvedRoom):
             SearchResolvedRoomInspectorView(alias: alias, resolvedRoom: resolvedRoom)
         case let .resolvedRoomId(roomPreview: roomPreview):
-            UI.RoomPreviewView(preview: roomPreview.info(), imageLoader: appState.matrixClient)
+            UI.RoomPreviewView(
+                preview: roomPreview.info(),
+                imageLoader: appState.matrixClient,
+                actions: appState.matrixClient?.roomPreviewActions(forRoomWithId: roomPreview.info().roomId, windowState: windowState)
+            )
         case let .resolvedUser(profile: userProfile):
             UI.UserProfileView(
                 profile: userProfile,

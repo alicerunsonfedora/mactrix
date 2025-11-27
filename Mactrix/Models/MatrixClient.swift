@@ -201,7 +201,7 @@ enum SelectedScreen {
     func clearCache() async throws {
         try await client.clearCaches(syncService: syncService)
     }
-    
+
     func isUserIgnored(_ userId: String) -> Bool {
         ignoredUserIds.contains(userId)
     }
@@ -327,6 +327,35 @@ extension MatrixClient {
 
     func userProfileActions(for userId: String, windowState: WindowState) -> some UserProfileActions {
         return MatrixClientUserProfileActions(userId: userId, matrixClient: self, windowState: windowState)
+    }
+}
+
+extension MatrixClient {
+    @MainActor
+    struct MatrixClientRoomPreviewActions: @MainActor RoomPreviewActions {
+        let roomId: String
+        let matrixClient: MatrixClient
+        let windowState: WindowState
+
+        func joinRoom() async throws {
+            let room = try await matrixClient.client.joinRoomById(roomId: roomId)
+            let timeline = LiveTimeline(room: LiveRoom(matrixRoom: room))
+            windowState.selectedScreen = .joinedRoom(timeline: timeline)
+        }
+
+        func knockRoom() async throws {
+            let room = try await matrixClient.client.knock(roomIdOrAlias: roomId, reason: nil, serverNames: ["matrix.org"])
+            let timeline = LiveTimeline(room: LiveRoom(matrixRoom: room))
+            windowState.selectedScreen = .joinedRoom(timeline: timeline)
+        }
+
+        func visitRoom() {
+            windowState.selectedRoomId = roomId
+        }
+    }
+
+    func roomPreviewActions(forRoomWithId roomId: String, windowState: WindowState) -> RoomPreviewActions {
+        return MatrixClientRoomPreviewActions(roomId: roomId, matrixClient: self, windowState: windowState)
     }
 }
 

@@ -203,7 +203,50 @@ extension MatrixRustSDK.RoomPreviewInfo: @retroactive CustomDebugStringConvertib
     }
 }
 
-extension MatrixRustSDK.RoomPreviewInfo: Models.RoomPreviewInfo {}
+extension MatrixRustSDK.RoomPreviewInfo: Models.RoomPreviewInfo {
+    public var userMembership: Models.Membership? {
+        switch membership {
+        case .joined:
+            return .joined
+        case .invited:
+            return .invited
+        case .left:
+            return .left
+        case .knocked:
+            return .knocked
+        case .banned:
+            return .banned
+        case nil:
+            return nil
+        }
+    }
+
+    public var joinRuleInfo: Models.JoinRule? {
+        switch joinRule {
+        case .invite:
+            return .invite
+        case .knock:
+            return .knock
+        case .public:
+            return .public
+        case nil:
+            return nil
+        default:
+            return .other
+        }
+    }
+
+    public var roomKind: Models.RoomKind {
+        switch roomType {
+        case .room:
+            return .room
+        case .space:
+            return .space
+        case let .custom(value: value):
+            return .custom(value: value)
+        }
+    }
+}
 
 extension MatrixRustSDK.RoomPreview: @retroactive Hashable {
     public static func == (lhs: MatrixRustSDK.RoomPreview, rhs: MatrixRustSDK.RoomPreview) -> Bool {

@@ -39,7 +39,10 @@ public struct AvatarImage<Preview: View>: View {
             imageOrPlaceholder
                 .aspectRatio(1.0, contentMode: .fit)
                 .task(id: avatarUrl) {
-                    guard let avatarUrl = avatarUrl else { return }
+                    guard let avatarUrl = avatarUrl else {
+                        avatar = nil
+                        return
+                    }
 
                     do {
                         avatar = try await imageLoader?.loadImage(matrixUrl: avatarUrl, size: proxy.size)

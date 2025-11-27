@@ -15,7 +15,11 @@ struct MainView: View {
         case let .joinedRoom(timeline: timeline):
             ChatView(timeline: timeline).id(timeline.room.id)
         case let .previewRoom(room):
-            UI.RoomPreviewView(preview: room.info(), imageLoader: appState.matrixClient)
+            UI.RoomPreviewView(
+                preview: room.info(),
+                imageLoader: appState.matrixClient,
+                actions: appState.matrixClient?.roomPreviewActions(forRoomWithId: room.info().roomId, windowState: windowState)
+            )
         case .newRoom:
             UI.CreateRoomScreen(onSubmit: { params in
                 guard let matrixClient = appState.matrixClient else { return }

@@ -15,6 +15,30 @@ public protocol Room: Hashable, Identifiable {
     @MainActor func syncMembers() async throws
 }
 
+public enum Membership {
+    case invited
+    case joined
+    case left
+    case knocked
+    case banned
+}
+
+public enum RoomKind {
+    /**
+     * It's a plain chat room.
+     */
+    case room
+    /**
+     * It's a space that can group several rooms.
+     */
+    case space
+    /**
+     * It's a custom implementation.
+     */
+    case custom(value: String
+    )
+}
+
 public struct MockRoom: Room, Identifiable {
     public func syncMembers() async throws {}
 
