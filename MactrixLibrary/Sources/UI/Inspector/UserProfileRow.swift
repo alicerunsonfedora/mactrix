@@ -41,9 +41,11 @@ public struct UserProfileRowLarge<Profile: UserProfile>: View {
                 .clipShape(.circle)
             VStack(alignment: .leading) {
                 Text(profile.displayName ?? "No display name")
+                    .textSelection(.enabled)
                 Text(profile.userId)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
+                    .textSelection(.enabled)
             }
             Spacer()
         }

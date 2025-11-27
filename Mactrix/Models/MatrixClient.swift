@@ -201,6 +201,10 @@ enum SelectedScreen {
     func clearCache() async throws {
         try await client.clearCaches(syncService: syncService)
     }
+    
+    func isUserIgnored(_ userId: String) -> Bool {
+        ignoredUserIds.contains(userId)
+    }
 
     func declineVerificationRequest(request: SessionVerificationRequestDetails) async throws {
         try await client.getSessionVerificationController().acknowledgeVerificationRequest(

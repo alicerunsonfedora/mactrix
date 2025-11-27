@@ -166,21 +166,12 @@ struct ChatView: View {
                         } else {
                             try await timeline.timeline?.markAsRead(receiptType: .read)
                         }
-
-                        /* // there doesn't seem to be an API to mark which event is the latest fully read.
-                         // instead only send the receipt when the latest message has been read
-                         guard let timelineItems = timeline.timelineItems else { return }
-                         let isLaterEvents = timelineItems.contains(where: {
-                             if let e = $0.asEvent() { e.date > event.date } else { false }
-                         })
-
-                         if !isLaterEvents {
-                             try await timeline.timeline?.markAsRead(receiptType: .fullyRead)
-                             Logger.viewCycle.info("latest event marked as read: \(latest.id)")
-                             self.latestMarkedReadEvent = latest
-                         } */
                     }
-                } catch { /* sleep cancelled */ }
+                } catch is CancellationError {
+                    /* sleep cancelled */
+                } catch {
+                    Logger.viewCycle.error("failed to send timeline read receipt: \(error)")
+                }
             }
             .onDisappear {
                 Task {

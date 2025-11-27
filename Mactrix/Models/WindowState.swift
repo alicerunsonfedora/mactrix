@@ -1,4 +1,5 @@
 import Foundation
+import MatrixRustSDK
 import SwiftUI
 
 enum InspectorContent: Equatable {
@@ -8,6 +9,14 @@ enum InspectorContent: Equatable {
     case roomThreads
     case roomPins
     case focusThread(threadTimeline: LiveTimeline)
+}
+
+enum SearchDirectResult {
+    case lookingForRoom(alias: String), roomNotFound(alias: String)
+    case resolvedRoomAlias(alias: String, resolvedRoom: MatrixRustSDK.ResolvedRoomAlias)
+    case resolvedRoomId(roomPreview: MatrixRustSDK.RoomPreview)
+    case lookingForUser(userId: String), userNotFound(userId: String)
+    case resolvedUser(profile: MatrixRustSDK.UserProfile)
 }
 
 @MainActor
@@ -24,6 +33,7 @@ enum InspectorContent: Equatable {
 
     var searchQuery: String = ""
     var searchTokens: [SearchToken] = []
+    var searchDirectResult: SearchDirectResult?
 
     var searchFocused: Binding<Bool> {
         Binding(
@@ -78,7 +88,7 @@ enum InspectorContent: Equatable {
             inspectorVisible = true
         }
     }
-    
+
     func focusUser(userId: String) {
         if inspectorVisible, inspectorContent == .userInfo(userId: userId) {
             inspectorVisible = false
@@ -91,6 +101,9 @@ enum InspectorContent: Equatable {
 
 enum SearchToken: Hashable, Identifiable {
     case users, rooms, spaces, messages
+    case resolvedRoomAlias(alias: String, resolvedRoom: ResolvedRoomAlias)
+    case resolvedRoomId(roomPreview: RoomPreview)
+    case resolvedUser(profile: UserProfile)
 
     var id: Self { self }
 }

@@ -202,3 +202,15 @@ extension MatrixRustSDK.RoomPreviewInfo: @retroactive CustomDebugStringConvertib
         "preview room info: \(roomId) \(name ?? "<no name>")"
     }
 }
+
+extension MatrixRustSDK.RoomPreviewInfo: Models.RoomPreviewInfo {}
+
+extension MatrixRustSDK.RoomPreview: @retroactive Hashable {
+    public static func == (lhs: MatrixRustSDK.RoomPreview, rhs: MatrixRustSDK.RoomPreview) -> Bool {
+        lhs.info().roomId == rhs.info().roomId
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(info().roomId)
+    }
+}

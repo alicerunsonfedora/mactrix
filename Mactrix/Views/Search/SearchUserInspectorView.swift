@@ -10,12 +10,12 @@ struct SearchUserInspectorView: View {
     @State var searchedUsers: [UserProfile] = []
     @State var searching: Bool = false
     @State var userListSelection: String? = nil
-    
+
     @ViewBuilder
     func popover(forUser user: UserProfile) -> some View {
         UI.UserProfileView(
             profile: user,
-            isUserIgnored: appState.matrixClient?.ignoredUserIds.contains(user.userId) == true,
+            isUserIgnored: appState.matrixClient?.isUserIgnored(user.userId) == true,
             actions: appState.matrixClient?.userProfileActions(for: user.userId, windowState: windowState),
             timelineActions: nil,
             imageLoader: appState.matrixClient

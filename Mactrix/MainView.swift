@@ -15,10 +15,7 @@ struct MainView: View {
         case let .joinedRoom(timeline: timeline):
             ChatView(timeline: timeline).id(timeline.room.id)
         case let .previewRoom(room):
-            Text("Room Preview: \(room.info().name ?? "unknown name")")
-            if let topic = room.info().topic {
-                Text("Topic: \(topic)")
-            }
+            UI.RoomPreviewView(preview: room.info(), imageLoader: appState.matrixClient)
         case .newRoom:
             UI.CreateRoomScreen(onSubmit: { params in
                 guard let matrixClient = appState.matrixClient else { return }
@@ -55,8 +52,6 @@ struct MainView: View {
             sidebar: { SidebarView() },
             detail: { details }
         )
-        .environment(windowState)
-        .focusedSceneValue(windowState)
         .inspector(isPresented: $windowState.inspectorVisible, content: {
             InspectorScreen()
                 .environment(windowState)
@@ -104,51 +99,10 @@ struct MainView: View {
                 appState.matrixClient = nil
             }
         }
-        .toolbar {
-            Button {
-                Logger.viewCycle.info("Show pins")
-                windowState.showRoomPins()
-            } label: {
-                Label("Show Pins", systemImage: "pin.circle")
-            }
-            .help("Show Pins")
-            .disabled(windowState.selectedRoomId == nil)
-
-            Button {
-                Logger.viewCycle.info("Show threads")
-                windowState.showRoomThreads()
-            } label: {
-                Label("Show Threads", systemImage: "list.bullet.circle")
-            }
-            .help("Show Threads")
-            .disabled(windowState.selectedRoomId == nil)
-
-            if !windowState.inspectorVisible {
-                HStack {
-                    Divider()
-                }
-            }
-        }
-        .searchable(text: $windowState.searchQuery, tokens: $windowState.searchTokens, isPresented: windowState.searchFocused, placement: .automatic, prompt: "Search") { token in
-            switch token {
-            case .users:
-                Text("Users")
-            case .rooms:
-                Text("Public Rooms")
-            case .spaces:
-                Text("Public Spaces")
-            case .messages:
-                Text("Messages")
-            }
-        }
-        .searchSuggestions {
-            if windowState.searchTokens.isEmpty {
-                Label("Users", systemImage: "person").searchCompletion(SearchToken.users)
-                Label("Public Rooms", systemImage: "number").searchCompletion(SearchToken.rooms)
-                Label("Public Spaces", systemImage: "network").searchCompletion(SearchToken.spaces)
-                Label("Messages", systemImage: "magnifyingglass.circle").searchCompletion(SearchToken.messages)
-            }
-        }
+        .modifier(ToolbarViewModifier())
+        .modifier(SearchViewModifier())
+        .environment(windowState)
+        .focusedSceneValue(windowState)
     }
 
     func attemptLoadUserSession() async {
