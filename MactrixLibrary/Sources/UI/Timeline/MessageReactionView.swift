@@ -32,6 +32,14 @@ public struct MessageReactionView<Reaction: Models.Reaction>: View {
         self.active = active
     }
 
+    var helpText: String {
+        let sendersString = reaction.senders.prefix(5)
+            .map { $0.senderId }
+            .joined(separator: ", ")
+
+        return "Reacted by \(sendersString)"
+    }
+
     public var body: some View {
         Toggle(isOn: active, label: {
             HStack(spacing: 0) {
@@ -42,6 +50,7 @@ public struct MessageReactionView<Reaction: Models.Reaction>: View {
             .padding(4)
         })
         .toggleStyle(MessageReactionToggleStyle())
+        .help(helpText)
     }
 }
 

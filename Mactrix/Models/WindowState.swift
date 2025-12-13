@@ -1,5 +1,6 @@
 import Foundation
 import MatrixRustSDK
+import OSLog
 import SwiftUI
 
 enum InspectorContent: Equatable {
@@ -61,6 +62,23 @@ final class WindowState {
         } else {
             inspectorVisible = true
             inspectorContent = .roomInfo
+        }
+    }
+
+    func focusMessage(eventId: String) {
+        guard case let .joinedRoom(timeline: roomTimeline) = selectedScreen else {
+            Logger.windowState.warning("focus message failed, no active timeline")
+            return
+        }
+
+        guard let focusItem = roomTimeline.timelineItems?.first(where: { $0.asEvent()?.eventOrTransactionId.id == eventId }) else {
+            Logger.windowState.warning("focus message failed, message not found")
+            return
+        }
+
+        Logger.windowState.warning("scrolling to message \(focusItem.id)")
+        withAnimation {
+            roomTimeline.scrollPosition.scrollTo(id: focusItem.id)
         }
     }
 

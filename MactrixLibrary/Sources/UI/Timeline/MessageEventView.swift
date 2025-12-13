@@ -70,12 +70,14 @@ public struct MessageEventView<MessageView: View, EventTimelineItem: Models.Even
     let message: MessageView
     let actions: MessageEventActions
     let imageLoader: ImageLoader?
+    let ownUserId: String
 
-    public init(event: EventTimelineItem, focused: Bool, reactions: [Reaction], actions: MessageEventActions, imageLoader: ImageLoader?, @ViewBuilder message: () -> MessageView) {
+    public init(event: EventTimelineItem, focused: Bool, reactions: [Reaction], actions: MessageEventActions, ownUserID: String, imageLoader: ImageLoader?, @ViewBuilder message: () -> MessageView) {
         self.event = event
         self.focused = focused
         self.reactions = reactions
         self.actions = actions
+        self.ownUserId = ownUserID
         self.imageLoader = imageLoader
         self.message = message()
     }
@@ -131,7 +133,7 @@ public struct MessageEventView<MessageView: View, EventTimelineItem: Models.Even
     }
 
     func reactionIsActive(_ reaction: Reaction) -> Bool {
-        return reaction.senders.contains(where: { $0.senderId == event.sender })
+        return reaction.senders.contains(where: { $0.senderId == ownUserId })
     }
 
     public var body: some View {
@@ -206,6 +208,7 @@ public struct MockMessageEventActions: MessageEventActions {
         focused: false,
         reactions: [MockReaction()],
         actions: MockMessageEventActions(),
+        ownUserID: "user@example.com",
         imageLoader: nil
     ) {
         Text("This is the body of the message")

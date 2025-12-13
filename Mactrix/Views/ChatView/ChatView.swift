@@ -167,6 +167,17 @@ struct ChatView: View {
                     Logger.viewCycle.error("failed to send timeline read receipt: \(error)")
                 }
             }
+            .task {
+                do {
+                    try await Task.sleep(for: .seconds(2))
+                    try await appState.matrixClient?.client.trackRecentlyVisitedRoom(room: timeline.room.id)
+                    Logger.viewCycle.debug("marked room as recently visited: \(timeline.room.id)")
+                } catch is CancellationError {
+                    /* sleep cancelled */
+                } catch {
+                    Logger.viewCycle.error("failed to mark room as recently visited: \(error)")
+                }
+            }
             .onDisappear {
                 Task {
                     guard let timeline = timeline.timeline else { return }

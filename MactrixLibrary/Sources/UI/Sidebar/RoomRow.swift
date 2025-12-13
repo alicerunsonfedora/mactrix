@@ -82,14 +82,22 @@ public struct RoomRow: View {
 
     var badgeProminence: BadgeProminence {
         guard let roomInfo else { return .standard }
-        return roomInfo.highlightCount > 0 ? .increased : .standard
+        return roomInfo.numUnreadNotifications > 0 || roomInfo.numUnreadMentions > 0 ? .increased : .standard
     }
 
     var notifications: Int {
         guard let roomInfo else { return 0 }
 
-        return Int(roomInfo.numUnreadMessages)
-        // return roomInfo.highlightCount > 0 ? Int(roomInfo.highlightCount) : Int(roomInfo.notificationCount)
+        let highlightMessages = Int(max(
+            roomInfo.numUnreadNotifications,
+            roomInfo.numUnreadMentions
+        ))
+
+        if highlightMessages > 0 {
+            return highlightMessages
+        } else {
+            return Int(roomInfo.numUnreadMessages)
+        }
     }
 
     var isUnread: Bool {

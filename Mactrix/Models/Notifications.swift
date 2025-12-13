@@ -36,6 +36,7 @@ extension MatrixNotifications: MatrixRustSDK.SyncNotificationListener {
             content.title = notificationTitle(for: notification)
             content.subtitle = notificationBody(for: notification)
             content.sound = UNNotificationSound.default
+            content.interruptionLevel = .timeSensitive
             content.userInfo = ["roomId": roomId]
 
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.01, repeats: false)
@@ -55,7 +56,8 @@ extension MatrixNotifications: MatrixRustSDK.SyncNotificationListener {
             return "\(sender) invited you to a room"
         case let .timeline(event: event):
             let sender = notification.senderInfo.displayName ?? event.senderId()
-            return "\(sender) sent a message"
+            let roomName = notification.roomInfo.displayName
+            return "\(sender) (\(roomName))"
         }
     }
 

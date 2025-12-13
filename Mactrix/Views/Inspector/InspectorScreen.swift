@@ -31,7 +31,7 @@ struct InspectorScreen: View {
             switch windowState.selectedScreen {
             case let .joinedRoom(timeline: timeline):
                 UI.RoomInspectorView(room: timeline.room, members: timeline.room.fetchedMembers, roomInfo: timeline.room.roomInfo, imageLoader: appState.matrixClient, inspectorVisible: $windowState.inspectorVisible)
-            case .none, .newRoom, .previewRoom, .loadMatrixUrl(_), .user(profile:_):
+            case .none, .newRoom, .previewRoom, .loadMatrixUrl(_), .user(profile: _):
                 Text("No room selected")
                     .inspectorColumnWidth(min: 200, ideal: 250, max: nil)
             }
@@ -39,10 +39,10 @@ struct InspectorScreen: View {
             InspectorUserInfo(userId: userId)
                 .inspectorColumnWidth(min: 200, ideal: 250, max: nil)
         case .roomThreads:
-            Text("Room threads")
+            InspectorThreads()
                 .inspectorColumnWidth(min: 200, ideal: 250, max: nil)
         case .roomPins:
-            Text("Room pins")
+            InspectorRoomPins()
                 .inspectorColumnWidth(min: 200, ideal: 250, max: nil)
         }
     }
@@ -58,54 +58,6 @@ struct InspectorScreen: View {
                     Label("Toggle Inspector", systemImage: "info.circle")
                 }
                 .help("Toggle Inspector")
-            }
-    }
-}
-
-struct InspectorUserInfo: View {
-    @Environment(AppState.self) private var appState
-    @Environment(WindowState.self) private var windowState
-
-    let userId: String
-
-    @State private var profile: MatrixRustSDK.UserProfile?
-
-    var isUserIgnored: Bool {
-        appState.matrixClient?.ignoredUserIds.contains(userId) == true
-    }
-
-    @ViewBuilder
-    var content: some View {
-        if let profile {
-            UI.UserProfileView(
-                profile: profile,
-                isUserIgnored: isUserIgnored,
-                actions: appState.matrixClient?.userProfileActions(forUserId: userId, windowState: windowState),
-                timelineActions: nil,
-                imageLoader: appState.matrixClient
-            )
-        } else {
-            UI.UserProfileView(
-                profile: MockUserProfile(),
-                isUserIgnored: isUserIgnored,
-                actions: nil,
-                timelineActions: nil,
-                imageLoader: appState.matrixClient
-            )
-            .redacted(reason: .placeholder)
-        }
-    }
-
-    var body: some View {
-        content
-            .task(id: userId) {
-                guard let matrixClient = appState.matrixClient else { return }
-
-                do {
-                    profile = try await matrixClient.client.getProfile(userId: userId)
-                } catch {
-                    Logger.viewCycle.error("failed to get profile \(error)")
-                }
             }
     }
 }

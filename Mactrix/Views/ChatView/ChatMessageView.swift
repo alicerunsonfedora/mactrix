@@ -106,9 +106,18 @@ struct ChatMessageView: View, UI.MessageEventActions {
         guard let focusedEventId = timeline.focusedTimelineEventId else { return false }
         return focusedEventId == event.eventOrTransactionId.id
     }
+    
+    var ownUserId: String {
+        do {
+            return try appState.matrixClient?.client.userId() ?? ""
+        } catch {
+            Logger.viewCycle.error("failed to get user id for message \(error)")
+            return ""
+        }
+    }
 
     var body: some View {
-        UI.MessageEventView(event: event, focused: isEventFocused, reactions: msg.reactions, actions: self, imageLoader: appState.matrixClient) {
+        UI.MessageEventView(event: event, focused: isEventFocused, reactions: msg.reactions, actions: self, ownUserID: ownUserId, imageLoader: appState.matrixClient) {
             VStack(alignment: .leading, spacing: 20) {
                 if msg.inReplyTo != nil || (!timeline.isThreadFocus && msg.threadSummary != nil) {
                     VStack(alignment: .leading) {

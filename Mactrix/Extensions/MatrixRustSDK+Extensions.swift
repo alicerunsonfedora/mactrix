@@ -134,6 +134,106 @@ extension MatrixRustSDK.EventTimelineItem: Models.EventTimelineItem {
     }
 }
 
+extension MatrixRustSDK.TimelineItemContent: @retroactive CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .callInvite:
+            return "call invite"
+        case let .msgLike(content: content):
+            return content.kind.description
+        case .rtcNotification:
+            return "rtc notification"
+        case let .roomMembership(userId: userId, userDisplayName: _, change: change, reason: reason):
+            return Self.roomMembershipDescription(userId: userId, change: change, reason: reason)
+        case let .profileChange(displayName: displayName, prevDisplayName: prevDisplayName, avatarUrl: avatarUrl, prevAvatarUrl: prevAvatarUrl):
+            switch (displayName, prevDisplayName, avatarUrl, prevAvatarUrl) {
+            case (.some(_), .some(_), .some(_), .some(_)):
+                return "changed their display name and avatar"
+            case let (.some(displayName), .some(prevDisplayName), _, _):
+                return "changed their display name from \(prevDisplayName) to \(displayName)"
+            case (_, _, .some(_), .some(_)):
+                return "changed their avatar"
+            case _:
+                return "unknown profile change"
+            }
+        case let .state(stateKey: _, content: content):
+            return content.description
+        case let .failedToParseMessageLike(eventType: eventType, error: error):
+            return "failed to parse \(eventType): \(error)"
+        case let .failedToParseState(eventType: eventType, stateKey: stateKey, error: error):
+            return "failed to parse \(eventType) \(stateKey): \(error)"
+        }
+    }
+
+    public static func roomMembershipDescription(userId: String, change: MembershipChange?, reason: String?) -> String {
+        let changeMsg = switch change {
+        case nil:
+            "unknown membership change event"
+        case .some(.none):
+            "room membership event was none"
+        case .banned:
+            "banned \(userId)"
+        case .error:
+            "room membership event error"
+        case .joined:
+            "joined room"
+        case .left:
+            "left the room"
+        case .unbanned:
+            "unbanned \(userId)"
+        case .kicked:
+            "kicked \(userId)"
+        case .invited:
+            "invited \(userId)"
+        case .kickedAndBanned:
+            "kicked and banned \(userId)"
+        case .invitationAccepted:
+            "accepted invitiation to join the room"
+        case .invitationRejected:
+            "rejected invitiation to join the room"
+        case .invitationRevoked:
+            "revoked invitiation for \(userId) to join the room"
+        case .knocked:
+            "requested to join the room"
+        case .knockAccepted:
+            "accepted join request from \(userId)"
+        case .knockRetracted:
+            "request to join the room was retracted"
+        case .knockDenied:
+            "denied join request from \(userId)"
+        case .notImplemented:
+            "room membership event not implemented"
+        }
+
+        let message: String = if let reason {
+            "\(changeMsg) because \(reason)"
+        } else {
+            changeMsg
+        }
+
+        return message
+    }
+}
+
+extension MatrixRustSDK.MsgLikeKind: @retroactive CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case let .message(content: content):
+            return content.body
+        case .sticker(body: let body, info: _, source: _):
+            return "Sticker: \(body)"
+        case .poll(question: let question, kind: _, maxSelections: _, answers: _, votes: _, endTime: _, hasBeenEdited: _):
+            return "Poll: \(question)"
+        case .redacted:
+            return "Redacted"
+        case .unableToDecrypt(msg: _):
+            return "Unable to decrypt"
+        case let .other(eventType: eventType):
+            return "Other: \(eventType)"
+        }
+    }
+}
+
 extension MatrixRustSDK.MessageLikeEventType: @retroactive CustomStringConvertible {
     public var description: String {
         switch self {
