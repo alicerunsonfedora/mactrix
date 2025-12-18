@@ -2,14 +2,14 @@ import MatrixRustSDK
 import SwiftUI
 import UI
 
-struct TimelineEventView: View {
-    let timeline: LiveTimeline
+struct TimelineStateEventRow: View {
     let event: MatrixRustSDK.EventTimelineItem
 
     var body: some View {
         switch event.content {
-        case let .msgLike(content: content):
-            ChatMessageView(timeline: timeline, event: event, msg: content)
+        case .msgLike(content: _):
+            Text("Unreachable state")
+                .foregroundStyle(.red)
         case .callInvite:
             UI.GenericEventView(event: event, name: "Call invite")
         case .rtcNotification:
@@ -36,6 +36,38 @@ struct TimelineEventView: View {
             UI.GenericEventView(event: event, name: "Failed to parse message: \(error)")
         case .failedToParseState(eventType: _, stateKey: _, error: let error):
             UI.GenericEventView(event: event, name: "Failed to parse state: \(error)")
+        }
+    }
+}
+
+struct TimelineStateEventsView: View {
+    let timeline: LiveTimeline
+    let events: [TimelineGroup.Event]
+
+    @State private var expanded: Bool = false
+
+    var body: some View {
+        if events.count == 1 {
+            TimelineStateEventRow(event: events[0].event)
+        } else {
+            VStack(alignment: .leading) {
+                HStack {
+                    Text("\(events.count) state events")
+                    Button(expanded ? "Collapse" : "Expand") {
+                        withAnimation {
+                            expanded.toggle()
+                        }
+                    }
+                    .buttonStyle(.link)
+                    Spacer()
+                }
+                .padding(.leading, 64)
+                if expanded {
+                    ForEach(events) { event in
+                        TimelineStateEventRow(event: event.event)
+                    }
+                }
+            }
         }
     }
 }

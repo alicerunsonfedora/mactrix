@@ -13,7 +13,7 @@ public final class LiveTimeline {
     private var timelineHandle: TaskHandle?
     private var paginateHandle: TaskHandle?
 
-    public var scrollPosition = ScrollPosition(idType: TimelineItem.ID.self, edge: .bottom)
+    public var scrollPosition = ScrollPosition(idType: TimelineGroup.ID.self, edge: .bottom)
     public var errorMessage: String?
     public var focusedTimelineEventId: String?
 
@@ -21,7 +21,13 @@ public final class LiveTimeline {
 
     public var sendReplyTo: MatrixRustSDK.EventTimelineItem?
 
-    public private(set) var timelineItems: [TimelineItem]?
+    /*@ObservationIgnored private var timelineUpdateVersion = 0
+     @ObservationIgnored private var timelineItems: [TimelineItem]?
+     public private(set) var timelineGroups: [TimelineGroup]?*/
+
+    @ObservationIgnored private var timelineItems: [TimelineItem] = []
+    public private(set) var timelineGroups: TimelineGroups = .init()
+
     public private(set) var paginating: RoomPaginationStatus = .idle(hitTimelineStart: false)
     public private(set) var hitTimelineStart: Bool = false
 
@@ -87,15 +93,16 @@ public final class LiveTimeline {
     public func focusEvent(id eventId: String) {
         Logger.liveTimeline.info("focus event: \(eventId)")
 
-        if let item = timelineItems?.first(where: { $0.asEvent()?.eventOrTransactionId.id == eventId }) {
-            Logger.liveTimeline.debug("scrolling to item \(item.id)")
-            focusedTimelineEventId = eventId
-            withAnimation {
-                scrollPosition.scrollTo(id: item.id)
-            }
-        } else {
-            Logger.liveTimeline.warning("could not find item in timeline")
-        }
+        Logger.liveTimeline.warning("TODO: Implement focus event again")
+        /* if let item = timelineItems?.first(where: { $0.asEvent()?.eventOrTransactionId.id == eventId }) {
+             Logger.liveTimeline.debug("scrolling to item \(item.id)")
+             focusedTimelineEventId = eventId
+             withAnimation {
+                 scrollPosition.scrollTo(id: item.id)
+             }
+         } else {
+             Logger.liveTimeline.warning("could not find item in timeline")
+         } */
     }
 }
 
@@ -106,32 +113,55 @@ extension LiveTimeline: TimelineListener {
             let oldEdge = scrollPosition.edge
             Logger.liveTimeline.trace("onUpdate old view \(oldView.debugDescription) \(oldEdge.debugDescription)")
 
+            var updatedIds = Set<String>()
+
             for update in diff {
                 switch update {
                 case let .append(values):
-                    timelineItems!.append(contentsOf: values)
+                    timelineItems.append(contentsOf: values)
+                    for value in values {
+                        updatedIds.insert(value.uniqueId().id)
+                    }
                 case .clear:
-                    timelineItems!.removeAll()
+                    timelineItems.removeAll()
                 case let .pushFront(room):
-                    timelineItems!.insert(room, at: 0)
+                    timelineItems.insert(room, at: 0)
+                    updatedIds.insert(room.uniqueId().id)
                 case let .pushBack(room):
-                    timelineItems!.append(room)
+                    timelineItems.append(room)
+                    updatedIds.insert(room.uniqueId().id)
                 case .popFront:
-                    timelineItems!.removeFirst()
+                    timelineItems.removeFirst()
                 case .popBack:
-                    timelineItems!.removeLast()
+                    timelineItems.removeLast()
                 case let .insert(index, room):
-                    timelineItems!.insert(room, at: Int(index))
+                    timelineItems.insert(room, at: Int(index))
+                    updatedIds.insert(room.uniqueId().id)
                 case let .set(index, room):
-                    timelineItems![Int(index)] = room
+                    timelineItems[Int(index)] = room
+                    updatedIds.insert(room.uniqueId().id)
                 case let .remove(index):
-                    timelineItems!.remove(at: Int(index))
+                    timelineItems.remove(at: Int(index))
                 case let .truncate(length):
-                    timelineItems!.removeSubrange(Int(length) ..< timelineItems!.count)
+                    timelineItems.removeSubrange(Int(length) ..< timelineItems.count)
                 case let .reset(values: values):
                     timelineItems = values
+                    for value in values {
+                        updatedIds.insert(value.uniqueId().id)
+                    }
                 }
             }
+
+            timelineGroups.updateItems(items: timelineItems, updatedIds: updatedIds)
+
+            /* if let timelineItems {
+                 self.timelineUpdateVersion += 1
+
+                 let oldTimeline = timelineGroups
+                 timelineGroups = TimelineGroup.construct(fromTimelineItems: timelineItems, version: self.timelineUpdateVersion)
+
+                 Logger.liveTimeline.info("Old == New \(oldTimeline == self.timelineGroups), hashes: \(oldTimeline.hashValue) == \(self.timelineGroups.hashValue), changed ids: \(changedIds)")
+             } */
 
             if let oldEdge {
                 scrollPosition.scrollTo(edge: oldEdge)

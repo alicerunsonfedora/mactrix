@@ -60,19 +60,66 @@ extension MatrixRustSDK.Room: @retroactive Identifiable {
 
 extension MatrixRustSDK.RoomInfo: Models.RoomInfo {}
 
-extension MatrixRustSDK.TimelineItem: @retroactive Hashable, @retroactive Identifiable {
-    public var id: String {
-        uniqueId().id
-    }
+/* extension MatrixRustSDK.TimelineItem: @retroactive Hashable, @retroactive Identifiable {
+     public var id: String {
+         uniqueId().id
+     }
 
-    public static func == (lhs: MatrixRustSDK.TimelineItem, rhs: MatrixRustSDK.TimelineItem) -> Bool {
-        return lhs.id == rhs.id
-    }
+     public static func == (lhs: MatrixRustSDK.TimelineItem, rhs: MatrixRustSDK.TimelineItem) -> Bool {
+         return lhs.id == rhs.id
+             && lhs.asEvent() == rhs.asEvent()
+             && lhs.asVirtual() == rhs.asVirtual()
+     }
 
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-}
+     public func hash(into hasher: inout Hasher) {
+         hasher.combine(id)
+         hasher.combine(asEvent())
+         hasher.combine(asVirtual())
+     }
+ } */
+
+/* extension MatrixRustSDK.EventTimelineItem: @retroactive Hashable {
+     public static func == (lhs: MatrixRustSDK.EventTimelineItem, rhs: MatrixRustSDK.EventTimelineItem) -> Bool {
+         return lhs.isRemote == rhs.isRemote
+             && lhs.eventOrTransactionId == rhs.eventOrTransactionId
+             && lhs.sender == rhs.sender
+             && lhs.senderProfile == rhs.senderProfile
+             && lhs.isOwn == rhs.isOwn
+             && lhs.isEditable == rhs.isEditable
+             && lhs.content == rhs.content
+             && lhs.timestamp == rhs.timestamp
+             && lhs.localSendState == rhs.localSendState
+             && lhs.localCreatedAt == rhs.localCreatedAt
+             && lhs.readReceipts == rhs.readReceipts
+             && lhs.origin == rhs.origin
+             && lhs.canBeRepliedTo == rhs.canBeRepliedTo
+     }
+
+     public func hash(into hasher: inout Hasher) {
+         hasher.combine(eventOrTransactionId)
+         hasher.combine(sender)
+         hasher.combine(senderProfile)
+         hasher.combine(isOwn)
+         hasher.combine(isEditable)
+         hasher.combine(content)
+         hasher.combine(timestamp)
+         hasher.combine(localSendState)
+         hasher.combine(localCreatedAt)
+         hasher.combine(readReceipts)
+         hasher.combine(origin)
+         hasher.combine(canBeRepliedTo)
+     }
+ } */
+
+/* extension MatrixRustSDK.MsgLikeContent: @retroactive Hashable {
+     public static func == (lhs: MatrixRustSDK.MsgLikeContent, rhs: MatrixRustSDK.MsgLikeContent) -> Bool {
+         return lhs.kind == rhs.kind
+             && lhs.reactions == rhs.reactions
+             && lhs.inReplyTo?.eventId() == rhs.inReplyTo?.eventId()
+             && lhs.threadRoot == rhs.threadRoot
+             && lhs.threadSummary?.numReplies() == rhs.threadSummary?.numReplies()
+     }
+ } */
 
 extension MatrixRustSDK.Reaction: @retroactive Identifiable {
     public var id: String {
@@ -131,6 +178,12 @@ extension MatrixRustSDK.EventTimelineItem: Models.EventTimelineItem {
 
     public var date: Date {
         timestamp.date
+    }
+}
+
+extension MatrixRustSDK.EventTimelineItem: @retroactive Identifiable {
+    public var id: MatrixRustSDK.EventOrTransactionId {
+        eventOrTransactionId
     }
 }
 
@@ -454,10 +507,10 @@ extension MatrixRustSDK.RoomPreviewInfo: Models.RoomPreviewInfo {
 
 extension MatrixRustSDK.RoomPreview: @retroactive Hashable {
     public static func == (lhs: MatrixRustSDK.RoomPreview, rhs: MatrixRustSDK.RoomPreview) -> Bool {
-        lhs.info().roomId == rhs.info().roomId
+        lhs.info() == rhs.info()
     }
 
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(info().roomId)
+        hasher.combine(info())
     }
 }

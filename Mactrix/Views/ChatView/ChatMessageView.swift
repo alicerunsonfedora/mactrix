@@ -11,6 +11,7 @@ struct ChatMessageView: View, UI.MessageEventActions {
     let timeline: LiveTimeline
     let event: MatrixRustSDK.EventTimelineItem
     let msg: MatrixRustSDK.MsgLikeContent
+    let includeProfileHeader: Bool
 
     var name: String {
         if case let .ready(displayName, _, _) = event.senderProfileDetails, let displayName = displayName {
@@ -106,7 +107,7 @@ struct ChatMessageView: View, UI.MessageEventActions {
         guard let focusedEventId = timeline.focusedTimelineEventId else { return false }
         return focusedEventId == event.eventOrTransactionId.id
     }
-    
+
     var ownUserId: String {
         do {
             return try appState.matrixClient?.client.userId() ?? ""
@@ -117,7 +118,10 @@ struct ChatMessageView: View, UI.MessageEventActions {
     }
 
     var body: some View {
-        UI.MessageEventView(event: event, focused: isEventFocused, reactions: msg.reactions, actions: self, ownUserID: ownUserId, imageLoader: appState.matrixClient) {
+        if includeProfileHeader {
+            UI.MessageEventProfileView(event: event, actions: self, imageLoader: appState.matrixClient)
+        }
+        UI.MessageEventBodyView(event: event, focused: isEventFocused, reactions: msg.reactions, actions: self, ownUserID: ownUserId, imageLoader: appState.matrixClient) {
             VStack(alignment: .leading, spacing: 20) {
                 if msg.inReplyTo != nil || (!timeline.isThreadFocus && msg.threadSummary != nil) {
                     VStack(alignment: .leading) {

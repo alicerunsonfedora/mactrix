@@ -4,24 +4,45 @@ import OSLog
 import SwiftUI
 import UI
 
-struct ChatView: View {
-    @Environment(AppState.self) private var appState
+struct TimelineGroupView: View {
+    let timeline: LiveTimeline
+    let timelineGroup: TimelineGroup
 
-    var room: LiveRoom {
-        timeline.room
+    var body: some View {
+        switch timelineGroup {
+        case .messages(let messages, _, _):
+            ForEach(messages) { message in
+                ChatMessageView(timeline: timeline, event: message.event, msg: message.content, includeProfileHeader: message.id == messages.first?.id)
+            }
+        case .stateChanges(let events, _, _):
+            TimelineStateEventsView(timeline: timeline, events: events)
+        case .virtual(let item, _, _):
+            UI.VirtualItemView(item: item.asModel)
+        }
     }
+}
 
+struct TimelineItemsView: View {
+    let timeline: LiveTimeline
+
+    var body: some View {
+        if !timeline.timelineGroups.groups.isEmpty {
+            LazyVStack {
+                ForEach(timeline.timelineGroups.groups) { item in
+                    TimelineGroupView(timeline: timeline, timelineGroup: item)
+                }
+            }
+            .scrollTargetLayout()
+        } else {
+            ProgressView()
+        }
+    }
+}
+
+struct ChatTimelineScrollView: View {
     @Bindable var timeline: LiveTimeline
 
-    init(timeline: LiveTimeline) {
-        self.timeline = timeline
-    }
-
     @State private var scrollNearTop: Bool = false
-    @State private var scrollAtBottom: Bool = true
-    @State private var latestVisibleEvent: MatrixRustSDK.TimelineItem? = nil
-    @State private var latestMarkedReadEvent: MatrixRustSDK.TimelineItem? = nil
-    @State private var inputHeight: CGFloat?
 
     func loadMoreMessages() {
         guard scrollNearTop else { return }
@@ -42,31 +63,12 @@ struct ChatView: View {
         }
     }
 
-    @ViewBuilder
-    var timelineItemsView: some View {
-        if let timelineItems = timeline.timelineItems {
-            LazyVStack {
-                ForEach(timelineItems) { item in
-                    if let event = item.asEvent() {
-                        TimelineEventView(timeline: timeline, event: event)
-                    }
-                    if let virtual = item.asVirtual() {
-                        UI.VirtualItemView(item: virtual.asModel)
-                    }
-                }
-            }
-            .scrollTargetLayout()
-        } else {
-            ProgressView()
-        }
-    }
-
-    var timelineScrollView: some View {
+    var body: some View {
         ScrollView {
             ProgressView("Loading more messages")
                 .opacity(timeline.paginating == .paginating ? 1 : 0)
 
-            timelineItemsView
+            TimelineItemsView(timeline: timeline)
 
             if let errorMessage = timeline.errorMessage {
                 Text(errorMessage)
@@ -75,14 +77,13 @@ struct ChatView: View {
             }
 
             HStack {
-                UI.UserTypingIndicator(names: room.typingUserIds)
+                UI.UserTypingIndicator(names: timeline.room.typingUserIds)
                 Spacer()
             }
             .padding(.horizontal, 10)
         }
         .scrollPosition($timeline.scrollPosition)
         .defaultScrollAnchor(.bottom)
-        .safeAreaPadding(.bottom, inputHeight ?? 60) // chat input overlay
         .onScrollGeometryChange(for: Bool.self) { geo in
             geo.visibleRect.maxY - geo.containerSize.height < 400.0
         } action: { _, nearTop in
@@ -92,29 +93,30 @@ struct ChatView: View {
                 loadMoreMessages()
             }
         }
-        .onScrollTargetVisibilityChange(idType: TimelineItem.ID.self) { visibleTimelineItemIds in
-            guard let timelineItems = timeline.timelineItems else { return }
-            var latestEvent: MatrixRustSDK.TimelineItem? = nil
+        .task(id: timeline.timelineGroups) {
+            do {
+                try await Task.sleep(for: .seconds(1))
 
-            for id in visibleTimelineItemIds {
-                guard let item = timelineItems.first(where: { $0.id == id }) else {
-                    continue
-                }
-
-                guard let event = item.asEvent() else { continue }
-
-                if let latest = latestEvent {
-                    if latest.asEvent()!.date < event.date {
-                        latestEvent = item
-                    }
-                } else {
-                    latestEvent = item
-                }
+                Logger.viewCycle.debug("Mark room as read")
+                try await timeline.timeline?.markAsRead(receiptType: .read)
+            } catch is CancellationError {
+                /* sleep cancelled */
+            } catch {
+                Logger.viewCycle.error("failed to send timeline read receipt: \(error)")
             }
-
-            latestVisibleEvent = latestEvent
         }
     }
+}
+
+struct ChatJoinedRoom: View {
+    @Environment(AppState.self) private var appState
+    @Bindable var timeline: LiveTimeline
+
+    var room: LiveRoom {
+        timeline.room
+    }
+
+    @State private var inputHeight: CGFloat?
 
     var toolbarSubtitle: String {
         guard let topic = room.room.topic() else { return "" }
@@ -122,9 +124,9 @@ struct ChatView: View {
         return String(firstLine)
     }
 
-    @ViewBuilder
-    var joinedRoom: some View {
-        timelineScrollView
+    var body: some View {
+        ChatTimelineScrollView(timeline: timeline)
+            .safeAreaPadding(.bottom, inputHeight ?? 60) // chat input overlay
             .overlay(alignment: .bottom) {
                 ChatInputView(room: room.room, timeline: timeline, replyTo: $timeline.sendReplyTo, height: $inputHeight)
             }
@@ -132,41 +134,6 @@ struct ChatView: View {
             .navigationTitle(room.room.displayName() ?? "Unknown room")
             .navigationSubtitle(toolbarSubtitle)
             .frame(minWidth: 250, minHeight: 200)
-            .onChange(of: timeline.timelineItems) { _, _ in
-                if timeline.scrollPosition.edge == .bottom {
-                    Task {
-                        await Task.yield()
-                        timeline.scrollPosition.scrollTo(edge: .bottom)
-                    }
-                }
-            }
-            .task(id: latestVisibleEvent) {
-                do {
-                    guard let latest = latestVisibleEvent else { return }
-                    guard latest != latestMarkedReadEvent else { return }
-
-                    /* guard let event = latest.asEvent() else {
-                         Logger.viewCycle.fault("unreachable: latest should be event")
-                         return
-                     } */
-
-                    try await Task.sleep(for: .seconds(1))
-
-                    try await timeline.timeline?.markAsRead(receiptType: .read)
-
-                    /* if latest.uniqueId() == latestVisibleEvent?.uniqueId() {
-                         if case let .eventId(eventId: eventId) = event.eventOrTransactionId {
-                             try await timeline.timeline?.sendReadReceipt(receiptType: .read, eventId: eventId)
-                         } else {
-                             try await timeline.timeline?.markAsRead(receiptType: .read)
-                         }
-                     } */
-                } catch is CancellationError {
-                    /* sleep cancelled */
-                } catch {
-                    Logger.viewCycle.error("failed to send timeline read receipt: \(error)")
-                }
-            }
             .task {
                 do {
                     try await Task.sleep(for: .seconds(2))
@@ -189,6 +156,18 @@ struct ChatView: View {
                     }
                 }
             }
+    }
+}
+
+struct ChatView: View {
+    @Bindable var timeline: LiveTimeline
+
+    var room: LiveRoom {
+        timeline.room
+    }
+
+    init(timeline: LiveTimeline) {
+        self.timeline = timeline
     }
 
     @ViewBuilder
@@ -221,7 +200,7 @@ struct ChatView: View {
     var body: some View {
         switch room.room.membership() {
         case .joined:
-            joinedRoom
+            ChatJoinedRoom(timeline: timeline)
         case .invited:
             invitedRoom
         case .left:

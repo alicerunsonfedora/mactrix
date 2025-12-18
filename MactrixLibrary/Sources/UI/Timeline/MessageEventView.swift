@@ -63,7 +63,44 @@ struct MessageTimestampView: View {
     }
 }
 
-public struct MessageEventView<MessageView: View, EventTimelineItem: Models.EventTimelineItem, Reaction: Models.Reaction>: View {
+public struct MessageEventProfileView: View {
+    let event: EventTimelineItem
+    let actions: MessageEventActions
+    let imageLoader: ImageLoader?
+
+    public init(event: EventTimelineItem, actions: MessageEventActions, imageLoader: ImageLoader?) {
+        self.event = event
+        self.actions = actions
+        self.imageLoader = imageLoader
+    }
+
+    var name: String {
+        if case let .ready(displayName, _, _) = event.senderProfileDetails, let displayName = displayName {
+            return displayName
+        }
+        return event.sender
+    }
+
+    public var body: some View {
+        // Profile icon and name
+        Button(action: actions.focusUser) {
+            HStack(spacing: 0) {
+                HStack(spacing: 0) {
+                    AvatarImage(avatarUrl: event.senderProfileDetails.avatarUrl, imageLoader: imageLoader)
+                        .frame(width: 32, height: 32)
+                        .clipShape(Circle())
+                }.frame(width: 64)
+
+                Text(name)
+                    .fontWeight(.bold)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+public struct MessageEventBodyView<MessageView: View, EventTimelineItem: Models.EventTimelineItem, Reaction: Models.Reaction>: View {
     let event: EventTimelineItem
     let focused: Bool
     let reactions: [Reaction]
@@ -128,7 +165,7 @@ public struct MessageEventView<MessageView: View, EventTimelineItem: Models.Even
                 .shadow(color: .black.opacity(0.1), radius: 4)
         )
         .padding(.trailing, 20)
-        .padding(.top, 0)
+        .padding(.top, -30)
         .opacity(hoverText ? 1 : 0)
     }
 
@@ -139,22 +176,6 @@ public struct MessageEventView<MessageView: View, EventTimelineItem: Models.Even
     public var body: some View {
         ZStack(alignment: .topTrailing) {
             VStack(spacing: 0) {
-                // Profile icon and name
-                Button(action: actions.focusUser) {
-                    HStack(spacing: 0) {
-                        HStack(spacing: 0) {
-                            AvatarImage(avatarUrl: event.senderProfileDetails.avatarUrl, imageLoader: imageLoader)
-                                .frame(width: 32, height: 32)
-                                .clipShape(Circle())
-                        }.frame(width: 64)
-
-                        Text(name)
-                            .fontWeight(.bold)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                }
-                .buttonStyle(.plain)
-
                 // Main body
                 HStack(alignment: .top, spacing: 0) {
                     MessageTimestampView(date: event.date, hover: hoverText)
@@ -169,28 +190,30 @@ public struct MessageEventView<MessageView: View, EventTimelineItem: Models.Even
                 .padding(.horizontal, 10)
 
                 // Reactions
-                HStack {
-                    Spacer().frame(width: 64)
-                    ForEach(reactions) { reaction in
-                        MessageReactionView(
-                            reaction: reaction,
-                            active: Binding(
-                                get: { reactionIsActive(reaction) },
-                                set: { if $0 != reactionIsActive(reaction) { actions.toggleReaction(key: reaction.key) } }
+                if !reactions.isEmpty {
+                    HStack {
+                        Spacer().frame(width: 64)
+                        ForEach(reactions) { reaction in
+                            MessageReactionView(
+                                reaction: reaction,
+                                active: Binding(
+                                    get: { reactionIsActive(reaction) },
+                                    set: { if $0 != reactionIsActive(reaction) { actions.toggleReaction(key: reaction.key) } }
+                                )
                             )
-                        )
+                        }
+                        Spacer()
                     }
-                    Spacer()
+                    .padding(.top, 10)
                 }
-                .padding(.top, 10)
             }
 
             hoverActions
         }
-        .padding(.top, 5)
         .onHover { hover in
             hoverText = hover
         }
+        .padding(.bottom, reactions.isEmpty ? 0 : 10)
     }
 }
 
@@ -203,15 +226,40 @@ public struct MockMessageEventActions: MessageEventActions {
 }
 
 #Preview {
-    MessageEventView(
-        event: MockEventTimelineItem(),
-        focused: false,
-        reactions: [MockReaction()],
-        actions: MockMessageEventActions(),
-        ownUserID: "user@example.com",
-        imageLoader: nil
-    ) {
-        Text("This is the body of the message")
+    VStack(spacing: 0) {
+        MessageEventProfileView(event: MockEventTimelineItem(), actions: MockMessageEventActions(), imageLoader: nil)
+
+        MessageEventBodyView(
+            event: MockEventTimelineItem(),
+            focused: false,
+            reactions: [MockReaction](),
+            actions: MockMessageEventActions(),
+            ownUserID: "user@example.com",
+            imageLoader: nil
+        ) {
+            Text("This is the body of the message")
+        }
+
+        MessageEventBodyView(
+            event: MockEventTimelineItem(),
+            focused: false,
+            reactions: [MockReaction()],
+            actions: MockMessageEventActions(),
+            ownUserID: "user@example.com",
+            imageLoader: nil
+        ) {
+            Text("This is another message from the same sender, this message is long enough that it will wrap to the next line".formatAsMarkdown)
+        }
+
+        MessageEventBodyView(
+            event: MockEventTimelineItem(),
+            focused: false,
+            reactions: [MockReaction()],
+            actions: MockMessageEventActions(),
+            ownUserID: "user@example.com",
+            imageLoader: nil
+        ) {
+            Text("Yet another message")
+        }
     }
-    .padding(.vertical)
 }
