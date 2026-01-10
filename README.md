@@ -1,0 +1,118 @@
+# Mactrix
+
+A native macOS client for [Matrix](https://matrix.org) – an open protocol for decentralised, secure communications.
+
+## Overview
+
+Mactrix is built with Apple's [SwiftUI](https://developer.apple.com/swiftui/) framework to provide seamless native integration with macOS. It leverages the robust [matrix-rust-sdk](https://github.com/matrix-org/matrix-rust-sdk) for stability and performance.
+
+![Screenshot of the app](docs/screenshot-main.png)
+
+## Installation
+
+Mactrix is currently in active development. To build from source:
+
+### Requirements
+
+- macOS 15 or later
+- Up-to-date Xcode installed
+
+Xcode will automatically download all dependencies when building the project for the first time.
+
+### Building
+
+```bash
+git clone https://github.com/yourusername/Mactrix.git
+cd Mactrix
+xed .
+```
+
+Then open the project in Xcode and build using `Cmd+B`.
+
+### Completed Feature List
+
+- [ ] Authentication
+  - [x] Password
+  - [x] OAuth
+  - [ ] Email and Phone
+- [ ] Multi account
+- [ ] Timeline
+  - [x] Messages
+    - [ ] Send attachments
+    - [x] Markdown formatting
+  - [ ] Message actions
+    - [x] Add reactions
+    - [x] Reply to
+    - [x] Pin
+    - [ ] Edit
+  - [x] Show reactions
+  - [ ] Group timeline virtual items:
+    - Removed messages, user join / leave, username change, profile picture change
+  - [ ] Show read receipts
+  - [ ] Attachments
+    - [ ] Support all formats (video, audio, files)
+    - [ ] Download attachment to file
+    - [x] Preview attachments
+- [ ] Rooms
+  - [x] New room,
+  - [ ] Room settings,
+  - [ ] Invite to room
+- [x] Threads
+  - [x] Focus thread
+  - [x] Reply in thread
+- [ ] Spaces
+  - [x] Show spaces in sidebar
+  - [ ] Details view when selecting a space
+  - [ ] Drag and drop to organize spaces
+- [ ] Search bar
+  - [ ] Search in joined rooms and directs
+  - [x] Search for users
+  - [x] Search for public rooms
+  - [ ] Search for messages
+  - [x] Search for room or user ID directly
+- [ ] Settings
+  - [x] Account details
+  - [x] Sign out
+  - [ ] Sessions
+    - [x] Emoji verification
+    - [x] See verified / unverified status
+    - [ ] Verify with recovery key
+    - [ ] Change recovery key
+    - [ ] Rename current and other sessions
+    - [ ] Sign out other sessions
+    - [ ] Send only to verified users
+    - [ ] Export / import encryption keys
+  - [ ] Start on login
+  - [ ] Presence
+    - [ ] Read receipts and typing indicator toggles
+- [ ] Notifications
+  - [x] Message notification
+  - [ ] Verify session notification
+- [ ] Navigation: forwards and backwards button
+- [x] Support matrix URLs
+- [ ] Keyboard navigation and accessibility
+- [ ] Video and voice chat
+
+## Screenshots
+
+### Main Chat Interface
+
+![Screenshot of the app](docs/screenshot-main.png)
+
+### Device Verification
+
+The app supports device verification by comparing emojis with another client.
+
+![Screenshot of device emoji verification](docs/screenshot-verification.png)
+
+### Create Room
+
+Creation
+
+![Screenshot of room creation page](docs/screenshot-create-room.png)
+
+### Search
+
+Find specific rooms, users, and public communities directly from the search bar.
+
+![Screenshot of search for specific room](docs/screenshot-search.png)

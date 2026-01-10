@@ -37,7 +37,9 @@ struct ChatMessageView: View, UI.MessageEventActions {
         timeline.sendReplyTo = event
     }
 
-    func replyInThread() {}
+    func replyInThread() {
+        windowState.focusThread(rootEventId: event.eventOrTransactionId.id)
+    }
 
     func pin() {
         Logger.viewCycle.info("Pinning message")
