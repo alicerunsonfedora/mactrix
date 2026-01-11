@@ -6,6 +6,8 @@ A native macOS client for [Matrix](https://matrix.org) – an open protocol for 
 
 Mactrix is built with Apple's [SwiftUI](https://developer.apple.com/swiftui/) framework to provide seamless native integration with macOS. It leverages the robust [matrix-rust-sdk](https://github.com/matrix-org/matrix-rust-sdk) for stability and performance.
 
+Feel free to join our Matrix room at [#mactrix:qpqp.dk](https://matrix.to/#/#mactrix:qpqp.dk).
+
 ![Screenshot of the app](docs/screenshot-main.png)
 
 ## Installation
