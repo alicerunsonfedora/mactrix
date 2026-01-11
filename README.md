@@ -10,7 +10,9 @@ Mactrix is built with Apple's [SwiftUI](https://developer.apple.com/swiftui/) fr
 
 ## Installation
 
-Mactrix is currently in active development. To build from source:
+Mactrix is currently in early development, which means that distribution with auto-updates does not exist yet. However, the latest version is built automatically and can be [downloaded here](https://github.com/viktorstrate/mactrix/actions/workflows/xcode-build.yml?query=branch%3Amain+event%3Apush). Simply select the latest build and download `Mactrix.app` under Artifacts.
+
+## Build From Source
 
 ### Requirements
 

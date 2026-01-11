@@ -114,6 +114,7 @@ struct SearchViewModifier: ViewModifier {
             let matrixToPrefix = "https://matrix.to/#/"
             if result.starts(with: matrixToPrefix) {
                 result = String(result.dropFirst(matrixToPrefix.count))
+                result = result.removingPercentEncoding ?? result
             }
 
             if result.starts(with: "@") {
