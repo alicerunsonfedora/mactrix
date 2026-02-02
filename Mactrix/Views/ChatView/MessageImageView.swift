@@ -23,6 +23,7 @@ struct MessageImageView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(maxHeight: 300)
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
                         .onDrag {
                             let itemProvider = NSItemProvider()
                             itemProvider.suggestedName = content.filename

@@ -123,27 +123,21 @@ struct ChatMessageView: View, UI.MessageEventActions {
             UI.MessageEventProfileView(event: event, actions: self, imageLoader: appState.matrixClient)
         }
         UI.MessageEventBodyView(event: event, focused: isEventFocused, reactions: msg.reactions, actions: self, ownUserID: ownUserId, imageLoader: appState.matrixClient) {
-            VStack(alignment: .leading, spacing: 20) {
-                if msg.inReplyTo != nil || (!timeline.isThreadFocus && msg.threadSummary != nil) {
-                    VStack(alignment: .leading) {
-                        if let replyTo = msg.inReplyTo {
-                            EmbeddedMessageView(embeddedEvent: replyTo.event()) {
-                                timeline.focusEvent(id: .eventId(eventId: replyTo.eventId()))
-                            }
-                        }
-
-                        if let threadSummary = msg.threadSummary {
-                            Text("Thread summary (\(threadSummary.numReplies()) messages)")
-                                .italic()
-                            EmbeddedMessageView(embeddedEvent: threadSummary.latestEvent()) {
-                                windowState.focusThread(rootEventId: event.eventOrTransactionId.id)
-                            }
-                        }
+            VStack(alignment: .leading, spacing: 10) {
+                if let replyTo = msg.inReplyTo {
+                    EmbeddedMessageView(embeddedEvent: replyTo.event()) {
+                        timeline.focusEvent(id: .eventId(eventId: replyTo.eventId()))
                     }
-                    .foregroundStyle(.gray)
+                    .padding(.bottom, 10)
                 }
 
                 message
+
+                if let threadSummary = msg.threadSummary {
+                    MessageThreadSummary(summary: threadSummary) {
+                        windowState.focusThread(rootEventId: event.eventOrTransactionId.id)
+                    }
+                }
             }
         }
     }

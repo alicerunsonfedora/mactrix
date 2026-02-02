@@ -423,6 +423,27 @@ extension MatrixRustSDK.OtherState: @retroactive CustomStringConvertible {
     }
 }
 
+extension MatrixRustSDK.EmbeddedEventDetails {
+    var message: String? {
+        switch self {
+        case .unavailable:
+            return nil
+        case .pending:
+            return nil
+        case let .ready(content: content, sender: _, senderProfile: _, timestamp: _, eventOrTransactionId: _):
+            return content.description
+        case let .error(message: message):
+            return "Error: \(message)"
+        }
+    }
+}
+
+extension MatrixRustSDK.ThreadSummary: Models.ThreadSummary {
+    public var description: String? {
+        latestEvent().message
+    }
+}
+
 extension MatrixRustSDK.SpaceRoom: @retroactive Identifiable {
     public var id: String {
         roomId

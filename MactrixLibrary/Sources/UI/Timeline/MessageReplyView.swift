@@ -14,16 +14,26 @@ public struct MessageReplyView: View {
     var content: some View {
         HStack {
             VStack(alignment: .leading) {
-                Text("Reply: " + username)
+                Text(username)
                     .bold()
                     .textSelection(.enabled)
                 Text(message.formatAsMarkdown)
                     .textSelection(.enabled)
-                    .foregroundStyle(.secondary)
             }
         }
-        .padding(10)
-        .background(Color.gray.opacity(0.1))
+        .padding(.horizontal, 10)
+        .padding(.vertical, 4)
+        .background(
+            ZStack {
+                HStack(spacing: 0) {
+                    RoundedRectangle(cornerRadius: 4).opacity(0.5).frame(width: 3)
+                    Spacer()
+                }
+                RoundedRectangle(cornerRadius: 4)
+                    .padding(.leading, 2)
+                    .opacity(0.05)
+            }
+        )
         .italic()
     }
 
@@ -41,5 +51,5 @@ public struct MessageReplyView: View {
     VStack(alignment: .leading, spacing: 10) {
         MessageReplyView(username: "user@example.com", message: "This is the root message")
         Text("Real content")
-    }
+    }.padding()
 }
