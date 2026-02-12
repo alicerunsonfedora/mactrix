@@ -7,6 +7,7 @@ import UI
 struct ChatMessageView: View, UI.MessageEventActions {
     @Environment(AppState.self) private var appState
     @Environment(WindowState.self) private var windowState
+    @AppStorage("fontSize") private var fontSize = 13
 
     let timeline: LiveTimeline
     let event: MatrixRustSDK.EventTimelineItem
@@ -123,6 +124,7 @@ struct ChatMessageView: View, UI.MessageEventActions {
     var body: some View {
         if includeProfileHeader {
             UI.MessageEventProfileView(event: event, actions: self, imageLoader: appState.matrixClient)
+                .font(.system(size: .init(fontSize)))
         }
         UI.MessageEventBodyView(event: event, focused: isEventFocused, reactions: msg.reactions, actions: self, ownUserID: ownUserId, imageLoader: appState.matrixClient) {
             VStack(alignment: .leading, spacing: 10) {
@@ -142,5 +144,6 @@ struct ChatMessageView: View, UI.MessageEventActions {
                 }
             }
         }
+        .font(.system(size: .init(fontSize)))
     }
 }

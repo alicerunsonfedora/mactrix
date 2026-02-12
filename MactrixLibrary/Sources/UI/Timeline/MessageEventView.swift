@@ -177,7 +177,7 @@ public struct MessageEventBodyView<MessageView: View, EventTimelineItem: Models.
         ZStack(alignment: .topTrailing) {
             VStack(spacing: 0) {
                 // Main body
-                HStack(alignment: .top, spacing: 0) {
+                HStack(alignment: .firstTextBaseline, spacing: 0) {
                     MessageTimestampView(date: event.date, hover: hoverText)
                     message
                         .frame(maxWidth: .infinity, alignment: .leading)
