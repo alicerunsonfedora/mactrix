@@ -250,7 +250,6 @@ public struct MessageEventBodyView<
 
             hoverActions
         }
-        .contentShape(Rectangle())
         .onHover { hover in
             hoverText = hover
         }
